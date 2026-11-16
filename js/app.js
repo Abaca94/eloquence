@@ -276,8 +276,9 @@ document.addEventListener("keydown", (e) => {
 document.addEventListener("keyup", (e) => {
   if (e.code === "Space" && spaceDown) { spaceDown = false; stopRecording(); }
 });
-function toggleRecording() { listening ? stopRecording() : startRecording(); }
+function toggleRecording() { (listening || fineRec) ? stopRecording() : startRecording(); }
 function startRecording() {
+  if (fineReady()) return startFineRecording();
   if (!ensureRecognitionUI()) return;
   if (listening) return;
   micWarning(null); $("#mic-warning").classList.add("hidden");
@@ -306,7 +307,119 @@ function startRecording() {
   btn.textContent = "🔴 À vous… (cliquez ou relâchez Espace pour terminer)";
 }
 function stopRecording() {
+  if (fineRec) return stopFineRecording();
   if (rec && listening) { try { rec.stop(); } catch (e) {} }
+}
+
+/* --- Analyse son par son (modèle local, voir js/phoneme.js) --- */
+let fineRec = null, fineStarting = null, fineDownloaded = false, fineBusy = false, lastAudio = null;
+function fineReady() { return fineDownloaded && store.fineMode !== false && !!PHONEMES[currentPhrase().en]; }
+async function refreshFineUI() {
+  fineDownloaded = await Phoneme.isDownloaded();
+  $("#fine-download").classList.toggle("hidden", fineDownloaded);
+  $("#fine-toggle-wrap").classList.toggle("hidden", !fineDownloaded);
+  $("#fine-toggle").checked = store.fineMode !== false;
+  $("#fine-text").innerHTML = fineDownloaded
+    ? "🔬 <strong>Analyse son par son</strong> activable : votre voix est comparée son par son à la transcription attendue, sur l'appareil."
+    : $("#fine-text").innerHTML;
+  $("#fine-status").textContent = fineDownloaded ? "Modèle installé sur cet appareil (240 Mo)." : "Modèle non téléchargé.";
+  $("#fine-remove").classList.toggle("hidden", !fineDownloaded);
+}
+$("#fine-download").addEventListener("click", async () => {
+  const btn = $("#fine-download"), bar = $("#fine-progress");
+  btn.disabled = true; bar.classList.remove("hidden");
+  try {
+    await Phoneme.load((f) => { bar.firstElementChild.style.width = Math.round(100 * f) + "%"; btn.textContent = "Téléchargement… " + Math.round(100 * f) + " %"; });
+    store.fineMode = true; save();
+    toast("Analyse son par son prête");
+  } catch (e) {
+    micWarning("Le téléchargement du modèle a échoué (" + e.message + "). Vérifiez la connexion et réessayez.");
+  }
+  btn.disabled = false; btn.textContent = "Télécharger le modèle"; bar.classList.add("hidden");
+  refreshFineUI();
+});
+$("#fine-toggle").addEventListener("change", (e) => { store.fineMode = e.target.checked; save(); });
+$("#fine-remove").addEventListener("click", async () => {
+  await Phoneme.removeModel(); store.fineMode = true; save(); refreshFineUI(); toast("Modèle supprimé");
+});
+refreshFineUI();
+
+function setRecordButton(state) {
+  const btn = $("#btn-record");
+  btn.classList.toggle("recording", state === "rec");
+  btn.disabled = state === "busy";
+  btn.textContent = state === "rec" ? "🔴 À vous… (cliquez ou relâchez Espace pour terminer)"
+    : state === "busy" ? "⏳ Analyse son par son…" : "🎙 Parler (ou touche Espace)";
+}
+function startFineRecording() {
+  if (fineRec || fineBusy) return;
+  micWarning(null); $("#mic-warning").classList.add("hidden");
+  Phoneme.load().catch(() => {});            // prépare le modèle pendant que vous parlez
+  fineRec = Phoneme.createRecorder();
+  fineStarting = fineRec.start().then(() => setRecordButton("rec")).catch((e) => {
+    fineRec = null; setRecordButton("idle");
+    micWarning("L'accès au micro a été refusé ou est indisponible. Autorisez le microphone pour Éloquence puis réessayez.");
+    throw e;
+  });
+}
+async function stopFineRecording() {
+  const r = fineRec; if (!r) return;
+  try { await fineStarting; } catch (e) { return; }
+  fineRec = null; fineBusy = true; setRecordButton("busy");
+  const phrase = currentPhrase();
+  try {
+    const audio = await r.stop();
+    if (!audio) { micWarning("Enregistrement trop court : maintenez la touche ou recliquez à la fin de la phrase."); return; }
+    lastAudio = audio;
+    const result = await Phoneme.run(audio, PHONEMES[phrase.en]);
+    showFineResult(result);
+  } catch (e) {
+    micWarning("L'analyse son par son a échoué (" + (e.message || e) + ").");
+  } finally { fineBusy = false; setRecordButton("idle"); }
+}
+function playLastAudio() {
+  if (!lastAudio) return;
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const b = ctx.createBuffer(1, lastAudio.length, 16000); b.getChannelData(0).set(lastAudio);
+  const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.onended = () => ctx.close(); s.start();
+}
+function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+function showFineResult(r) {
+  const score = r.score;
+  recordScore(score);
+  const xp = Math.max(2, Math.round(score / 8)) + (score >= 90 ? 6 : 0);
+  addXP(xp);
+  const issues = [];
+  r.words.forEach(w => {
+    w.sounds.filter(s => s.level !== "ok").forEach(s => issues.push({ w: w.word, lvl: s.level, label: s.label, tip: s.tip }));
+    if (w.stressIssue) issues.push({ w: w.word, lvl: "warn",
+      label: "accent tonique : syllabe " + w.stressIssue.syll + " plus marquée que la syllabe " + w.stressIssue.expected,
+      tip: "Appuyez sur la syllabe " + w.stressIssue.expected + " : plus longue, plus forte, plus haute ; réduisez les autres." });
+  });
+  issues.sort((a, b) => (a.lvl === "error" ? 0 : 1) - (b.lvl === "error" ? 0 : 1));
+  const verdict = score >= 90 ? "✨ Excellent, presque tous les sons sont justes." :
+                  score >= 75 ? "👏 Solide. Travaillez les sons signalés ci-dessous." :
+                  score >= 50 ? "🙂 En cours d'acquisition : rejouez le modèle en mode lent." :
+                                "🔁 Reprenez son par son : écoutez, répétez, comparez.";
+  const res = $("#pron-result");
+  res.classList.remove("hidden");
+  res.innerHTML = `
+    <div class="score-line">${verdict} <strong>${score} / 100</strong> <span class="muted">(+${xp} ⭐)</span></div>
+    <div class="score-bar"><div style="width:${score}%"></div></div>
+    <div class="words">${r.words.map(w => `<span class="w-chip ${w.level === "error" ? "w-missed-soft" : w.level === "warn" ? "w-off" : "w-good"}">${esc(w.word)}</span>`).join("")}</div>
+    ${issues.length ? `<ul class="fine-issues">${issues.slice(0, 6).map(i => `<li class="${i.lvl}"><strong>${esc(i.w)}</strong> · ${esc(i.label)}<br><span>${esc(i.tip)}</span></li>`).join("")}</ul>`
+      : `<div class="heard">Aucun son problématique détecté.</div>`}
+    ${issues.length > 6 ? `<div class="heard">… et ${issues.length - 6} autre(s) point(s) mineur(s).</div>` : ""}
+    <div class="controls fine-replay"><button class="btn outline" id="btn-replay">▶ Réécouter ma voix</button><button class="btn outline" id="btn-replay-model">🔊 Le modèle</button></div>
+    <div class="heard">Analyse locale, son par son. Les sons réduits (schwa) ne sont pas notés ; une alerte isolée peut être une fausse alerte.</div>`;
+  $("#btn-replay").addEventListener("click", playLastAudio);
+  $("#btn-replay-model").addEventListener("click", () => speak(currentPhrase().en, parseFloat(store.rate)));
+  toast("Enregistré · +" + xp + " ⭐");
+}
+function recordScore(score) {
+  const st = store.phraseStats[pronFilter] || { n: 0, sum: 0 };
+  st.n++; st.sum += score; store.phraseStats[pronFilter] = st;
+  if (score > store.bestScore) store.bestScore = score;
 }
 function finishAttempt(heard, alternatives) {
   listening = false;
@@ -333,9 +446,7 @@ function finishAttempt(heard, alternatives) {
   const score = Math.round(100 * (matchedChips + 0.5 * offChips) / tWords.length);
   // XP + stats
   const xp = Math.max(2, Math.round(score / 8)) + (score >= 90 ? 6 : 0);
-  const st = store.phraseStats[pronFilter] || { n: 0, sum: 0 };
-  st.n++; st.sum += score; store.phraseStats[pronFilter] = st;
-  if (score > store.bestScore) store.bestScore = score;
+  recordScore(score);
   addXP(xp);
 
   const res = $("#pron-result");
