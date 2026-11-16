@@ -106,6 +106,13 @@ function loadVoices() {
     sel.appendChild(o);
   });
   if (store.voiceURI) sel.value = store.voiceURI;
+  const diag = $("#voice-diag-list");
+  if (diag) {
+    const all = speechSynthesis.getVoices();
+    const en = all.filter(v => /^en(-|_|$)/i.test(v.lang));
+    diag.innerHTML = "<p>" + all.length + " voix au total, dont " + en.length + " en anglais :</p><p>" +
+      (en.map(v => v.name + " · " + v.lang + (v.localService ? "" : " · en ligne")).join("<br>") || "aucune") + "</p>";
+  }
   const hint = $("#voice-hint");
   if (hint) hint.classList.toggle("hidden", voices.length > 0 && voiceScore(voices[0]) >= 180);
 }
