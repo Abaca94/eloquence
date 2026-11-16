@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#161a21">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Éloquence">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Éloquence — Atelier d'anglais oral</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">É</div>
+    <div>
+      <h1>Éloquence</h1>
+      <span class="tagline">Atelier d'anglais oral · niveau expert</span>
+    </div>
+  </div>
+  <div class="hud">
+    <div class="stat" title="Série de jours consécutifs"><span class="ico">🔥</span><span id="hud-streak">0</span></div>
+    <div class="stat" title="Fidélité"><span class="ico">⭐</span><span id="hud-xp">0</span></div>
+    <div class="stat level" title="Niveau"><span id="hud-level">—</span></div>
+    <button class="ghost" id="btn-settings" title="Réglages">⚙</button>
+  </div>
+</header>
+
+<nav id="tabs">
+  <button class="tab active" data-tab="dashboard">Tableau de bord</button>
+  <button class="tab" data-tab="pronunciation">Prononciation</button>
+  <button class="tab" data-tab="dialogue">Conversation</button>
+  <button class="tab" data-tab="nuance">Nuances</button>
+  <button class="tab" data-tab="progress">Progression</button>
+</nav>
+
+<main>
+  <!-- ============ DASHBOARD ============ -->
+  <section id="tab-dashboard" class="panel active">
+    <div class="welcome-card">
+      <h2>Bonjour, et bienvenue à votre atelier.</h2>
+      <p>Objectif du jour : <strong id="daily-goal-text">3 exercices</strong> · <span id="daily-goal-progress">0 / 3</span></p>
+      <div class="goal-bar"><div id="goal-fill"></div></div>
+    </div>
+    <div class="cards">
+      <div class="card" data-open="pronunciation">
+        <div class="card-ico">🎙</div>
+        <h3>Forge phonétique</h3>
+        <p>Travail ciblé sur les sons que le français ne connaît pas, et sur les mots techniques de vos domaines.</p>
+        <span class="cta">S'entraîner →</span>
+      </div>
+      <div class="card" data-open="dialogue">
+        <div class="card-ico">💬</div>
+        <h3>Tête-à-tête</h3>
+        <p>Conversations professionnelles avec un agent conversationnel : réunions, appels clients, négociations.</p>
+        <span class="cta">Converser →</span>
+      </div>
+      <div class="card" data-open="nuance">
+        <div class="card-ico">⚖️</div>
+        <h3>Nuances &amp; précision</h3>
+        <p>Distinguer les synonymes, registres et pièges auditifs — l'oreille du traducteur, à l'oral.</p>
+        <span class="cta">Affiner →</span>
+      </div>
+    </div>
+    <div class="tip" id="daily-tip"></div>
+  </section>
+
+  <!-- ============ PRONUNCIATION ============ -->
+  <section id="tab-pronunciation" class="panel">
+    <h2>Forge phonétique</h2>
+    <p class="hint">Choisissez un axe de travail. Écoutez le modèle, rejouez-le, puis parlez — le système analyse votre production.</p>
+    <div class="filters" id="pron-filters"></div>
+    <div class="workbench">
+      <div class="phrase-card">
+        <button class="ghost small" id="pron-prev">←</button>
+        <div class="phrase-main">
+          <div class="english" id="pron-en">—</div>
+          <div class="french" id="pron-fr"></div>
+          <div class="focus-tag" id="pron-focus"></div>
+          <div class="coach" id="pron-tip"></div>
+        </div>
+        <div class="phrase-actions">
+          <button class="ghost small" id="pron-next">→</button>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" id="btn-listen">🔊 Écouter le modèle</button>
+        <button class="btn" id="btn-slow">🐢 Lentement</button>
+        <button class="btn primary" id="btn-record">🎙 Parler (maintenir la touche Espace)</button>
+        <button class="btn outline" id="btn-show-answer">Voir la transcription attendue</button>
+      </div>
+      <div id="pron-result" class="result hidden"></div>
+      <div id="mic-warning" class="warning hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ DIALOGUE ============ -->
+  <section id="tab-dialogue" class="panel">
+    <div id="dialogue-select">
+      <h2>Tête-à-tête</h2>
+      <p class="hint">Choisissez une situation. L'agent parle, vous répondez à voix haute ou au clavier. Aucun fil : tout reste sur votre machine.</p>
+      <div id="scenario-list" class="cards"></div>
+    </div>
+    <div id="dialogue-run" class="hidden">
+      <div class="dialogue-head">
+        <button class="ghost small" id="btn-dialogue-exit">← Quitter</button>
+        <h3 id="dialogue-title"></h3>
+        <div class="meters"><span id="dialogue-score">1 000</span> pts · <span id="dialogue-lives">❤ 3</span></div>
+      </div>
+      <div id="dialogue-log" class="chat-log"></div>
+      <div class="dialogue-input">
+        <button class="btn primary" id="btn-talk">🎙 Répondre à voix haute</button>
+        <div class="or">ou</div>
+        <input type="text" id="dlg-text" placeholder="Tapez votre réponse…">
+        <button class="btn outline" id="btn-dlg-send">Envoyer</button>
+        <button class="ghost small" id="btn-hint">💡 Indice</button>
+        <button class="ghost small" id="btn-skip">Passer</button>
+      </div>
+      <div id="dlg-hints" class="hints hidden"></div>
+    </div>
+  </section>
+
+  <!-- ============ NUANCE ============ -->
+  <section id="tab-nuance" class="panel">
+    <h2>Nuances &amp; précision</h2>
+    <p class="hint">Trois disciplines : distinguer des mots proches à l'oreille, choisir le registre juste, vue-contextualiser les synonymes de vos univers techniques.</p>
+    <div class="workbench" id="nuance-work">
+      <div class="phrase-card column">
+        <div class="focus-tag" id="nuance-type"></div>
+        <div id="nuance-question" class="english">—</div>
+        <div class="french" id="nuance-context"></div>
+        <div id="nuance-audio-zone"></div>
+      </div>
+      <div id="nuance-options"></div>
+      <div id="nuance-explain" class="coach hidden"></div>
+      <div class="controls">
+        <button class="btn primary hidden" id="nuance-next">Question suivante →</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PROGRESSION ============ -->
+  <section id="tab-progress" class="panel">
+    <h2>Progression</h2>
+    <div class="progress-grid">
+      <div class="progress-cell big">
+        <div class="kpi" id="p-level">—</div>
+        <div class="kpi-label">Niveau atteint</div>
+        <div class="goal-bar"><div id="p-level-fill"></div></div>
+        <div class="muted" id="p-level-next"></div>
+      </div>
+      <div class="progress-cell"><div class="kpi" id="p-xp">0</div><div class="kpi-label">Fidélité totale</div></div>
+      <div class="progress-cell"><div class="kpi" id="p-streak">0</div><div class="kpi-label">Série actuelle (jours)</div></div>
+      <div class="progress-cell"><div class="kpi" id="p-best">0</div><div class="kpi-label">Meilleur score de prononciation</div></div>
+      <div class="progress-cell"><div class="kpi" id="p-count">0</div><div class="kpi-label">Réponses enregistrées</div></div>
+    </div>
+    <h3 style="margin-top:2rem">Force des axes de travail</h3>
+    <div id="strength-list"></div>
+    <button class="btn danger" id="btn-reset" style="margin-top:2rem">Réinitialiser ma progression</button>
+  </section>
+</main>
+
+<!-- ============ SETTINGS ============ -->
+<div class="modal hidden" id="settings-modal">
+  <div class="modal-box">
+    <h3>Réglages</h3>
+    <label>Voix anglaise</label>
+    <select id="set-voice"></select>
+    <label>Vitesse de la voix</label>
+    <input type="range" id="set-rate" min="0.5" max="1.2" step="0.05" value="0.95">
+    <span id="rate-value">0.95</span>
+    <label>Objectif quotidien (exercices)</label>
+    <input type="number" id="set-goal" min="1" max="20" value="3">
+    <div class="modal-actions">
+      <button class="btn" id="settings-close">Fermer</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  if ("serviceWorker" in navigator && location.protocol !== "file:") {
+    window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+  }
+</script>
+</body>
+</html>
