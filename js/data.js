@@ -352,11 +352,11 @@ const SCENARIOS = [
   },
   {
     id: "clientcall", icon: "☎", title: "Appel client : un problème technique",
-    context: "Le client appelle : une pièce affiche un défaut après installation. Vous gèrez la situation par téléphone — empathie, précision, séquence.",
+    context: "Le client appelle : une pièce affiche un défaut après installation. Vous gérez la situation par téléphone — empathie, précision, séquence.",
     nodes: {
       start: {
         bot: "Hi, this is Sarah from Belgreen Industrial. I'm afraid we have a problem with the commissioning of unit seven — the display keeps resetting. Can you help?",
-        botFr: "Bonjour, c'est Sarah chez Belgreen Industrial. Nous avons un problème avec la mise en service de l'unité 7 — l'écran se réinitialise sans cesse. Pouvez-vous aider ?",
+        botFr: "Bonjour, c'est Sarah chez Belgreen Industrial. Nous avons malheureusement un problème avec la mise en service de l'unité 7 : l'écran se réinitialise sans cesse. Pouvez-vous nous aider ?",
         hints: ["Good morning, Sarah. I'm sorry to hear that.", "Can you tell me exactly when it happens?", "Does it reset at startup, or while it's running?"],
         branches: [
           { keywords: ["sorry", "when", "happen", "reset", "startup", "operation", "detail", "more information", "while"],
@@ -398,7 +398,7 @@ const SCENARIOS = [
       },
       outro: {
         bot: "You've been a great help today. I'll make sure to mention it. Have a good rest of your day!",
-        botFr: "Vous avez été d'une grande aide aujourd'hui. Je le mentionnerai à votre responsable. Bonne fin de journée !",
+        botFr: "Vous avez été d'une grande aide aujourd'hui. Je ne manquerai pas de le signaler. Bonne fin de journée !",
         hints: [], branches: [], next: null, end: true
       }
     }
@@ -409,7 +409,7 @@ const SCENARIOS = [
     nodes: {
       start: {
         bot: "Thank you for that thorough briefing. First question — you mentioned a fatigue margin of ten percent. Could you walk us through how you arrived at that figure?",
-        botFr: "Merci pour ce brief très complet. Première question — vous avez évoqué une marge de fatigue de dix pour cent. Pourriez-vous nous expliquer comment vous avez obtenu ce chiffre ?",
+        botFr: "Merci pour cet exposé très complet. Première question — vous avez évoqué une marge de fatigue de dix pour cent. Pourriez-vous nous expliquer comment vous avez obtenu ce chiffre ?",
         hints: ["Sure. The figure comes from…", "It's based on a worst-case scenario where…", "Let me break it down into three parts."],
         branches: [
           { keywords: ["based", "comes from", "derived", "worst case", "data", "test", "assumption", "analysis", "let me"],
@@ -462,7 +462,7 @@ const SCENARIOS = [
     nodes: {
       start: {
         bot: "Packed in here, isn't it? I'm Mark, I work in industrial automation. Have you been to this conference before?",
-        botFr: "Il fait bondissant ici, n'est-ce pas ? Je suis Mark, je travaille dans l'automatisation industrielle. Vous étiez déjà venue à ce salon ?",
+        botFr: "Il y a un monde fou ici, non ? Je suis Mark, je travaille dans l'automatisation industrielle. Vous étiez déjà venue à ce salon ?",
         hints: ["No, it's my first time here.", "Yes, I came two years ago. The keynote was excellent.", "I'm attending for the second time."],
         branches: [
           { keywords: ["first time", "before", "yes", "no", "year", "second", "time", "keynote", "attend"],
@@ -504,7 +504,7 @@ const SCENARIOS = [
       },
       n3: {
         bot: "Honestly, this has been the most interesting conversation I've had today. Would you be open to exchanging contacts? Maybe there's a project we could collaborate on.",
-        botFr: "Franchement, c'est la conversation la plus intéressante de ma journée. Accepteriez-vous d'échanger nos contacts ? Peut-être avons-nous un projet commun.",
+        botFr: "Franchement, c'est la conversation la plus intéressante de ma journée. Accepteriez-vous d'échanger nos contacts ? Il y a peut-être un projet sur lequel nous pourrions collaborer.",
         hints: ["That would be great.", "I'd be happy to. Shall I give you my card?", "Let's keep in touch — I'll send you a message on LinkedIn."],
         branches: [
           { keywords: ["yes", "happy", "great", "card", "contact", "keep in touch", "linkedin", "email"],
@@ -543,7 +543,7 @@ const SCENARIOS = [
       },
       n2: {
         bot: "So what actually drives your rate? Is it the volume, the deadline, or the level of technical detail?",
-        botFr: "Alors qu'est-ce qui fait vraiment monter votre tarif ? Le volume, le délai, ou le niveau de détail technique ?",
+        botFr: "Alors, qu'est-ce qui détermine réellement votre tarif ? Le volume, le délai, ou le niveau de détail technique ?",
         hints: ["Mainly the deadline — a rush premium of…", "It's the engineering drawings — they require…", "Both volume and deadline play a role."],
         branches: [
           { keywords: ["deadline", "rush", "volume", "drawings", "technical", "time", "hours", "premium", "role"],
@@ -557,7 +557,7 @@ const SCENARIOS = [
       },
       n3: {
         bot: "Thirty cents, eighty pages, three weeks. Do we have a deal?",
-        botFr: "Trente centimes, quatre-vingts pages, trois semaines. Sommes-nous d'accord ?",
+        botFr: "Trente cents, quatre-vingts pages, trois semaines. Marché conclu ?",
         hints: ["Thirty cents works for me.", "I can agree to those terms.", "Let's shake on it — I'll send the revised quote today."],
         branches: [
           { keywords: ["deal", "agree", "works", "acceptable", "shake", "yes", "term", "send", "quote"],

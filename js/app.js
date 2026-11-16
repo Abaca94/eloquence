@@ -677,20 +677,54 @@ function answerDialogUED(transcript) {
     }
   }
 }
+/* Réponse à voix haute : l'écoute continue jusqu'à ce que vous cliquiez de nouveau.
+   Les navigateurs arrêtent la reconnaissance à la première pause ; on la relance
+   donc automatiquement en gardant ce qui a déjà été dit, pour ne pas couper la parole. */
+let talk = null;
+function talkButton(on) {
+  $("#btn-talk").classList.toggle("recording", on);
+  $("#btn-talk").textContent = on ? "🔴 J'ai fini, envoyer" : "🎙 Répondre à voix haute";
+}
+function talkStartRec() {
+  const r = new SR();
+  r.lang = "en-US"; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
+  let finals = "", interim = "";
+  r.onresult = (ev) => {
+    finals = ""; interim = "";
+    for (let i = 0; i < ev.results.length; i++) {
+      if (ev.results[i].isFinal) finals += ev.results[i][0].transcript + " "; else interim += ev.results[i][0].transcript;
+    }
+    talk.current = (finals + interim).trim();
+    $("#dlg-text").value = (talk.done + " " + talk.current).trim();
+  };
+  r.onerror = (ev) => { if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { talk.stopping = true; micWarning("Micro refusé : autorisez-le dans les réglages du navigateur."); } };
+  r.onend = () => {
+    if (!talk) return;
+    talk.done = (talk.done + " " + talk.current).trim(); talk.current = "";
+    if (talk.stopping) return talkFinish();
+    // Pause détectée par le navigateur : on relance, sans envoyer.
+    try { talk.rec = talkStartRec(); } catch (e) { talkFinish(); }
+  };
+  r.start();
+  return r;
+}
+function talkFinish() {
+  const text = talk ? talk.done : "";
+  talk = null; listening = false; talkButton(false);
+  $("#dlg-text").value = "";
+  if (text) answerDialogUED(text); else toast("Je n'ai rien entendu : réessayez ou écrivez votre réponse.");
+}
 $("#btn-talk").addEventListener("click", () => {
   if (!ensureRecognitionUI()) return;
-  if (listening) { try { rec.stop(); } catch (e) {} return; }
+  if (talk) { talk.stopping = true; try { talk.rec.stop(); } catch (e) { talkFinish(); } return; }
   micWarning(null);
-  rec = makeRecognition((t) => answerDialogUED(t), () => {
-    listening = false;
-    $("#btn-talk").classList.remove("recording");
-    $("#btn-talk").textContent = "🎙 Répondre à voix haute";
-  });
-  try { rec.start(); listening = true; } catch (e) { return; }
-  $("#btn-talk").classList.add("recording");
-  $("#btn-talk").textContent = "🔴 …cliquez pour envoyer";
+  stopSpeaking();   // l'interlocuteur se tait pendant que vous parlez
+  talk = { done: "", current: "", stopping: false, rec: null };
+  try { talk.rec = talkStartRec(); } catch (e) { talk = null; return; }
+  listening = true; talkButton(true);
 });
 $("#btn-dlg-send").addEventListener("click", () => {
+  if (talk) { $("#btn-talk").click(); return; }
   const v = $("#dlg-text").value;
   $("#dlg-text").value = "";
   answerDialogUED(v);
@@ -726,6 +760,7 @@ $("#btn-skip").addEventListener("click", () => {
 });
 $("#btn-dialogue-exit").addEventListener("click", () => {
   $("#dialogue-run").classList.add("hidden");
+  if (talk) { talk.done = ""; talk.current = ""; talk.stopping = true; const t = talk; talk = null; listening = false; talkButton(false); try { t.rec.stop(); } catch (e) {} }
   $("#dialogue-select").classList.remove("hidden");
   stopSpeaking();
   $("#dlg-text").disabled = false;
