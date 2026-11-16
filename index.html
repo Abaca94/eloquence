@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Éloquence — Atelier d'anglais oral</title>
-<link rel="stylesheet" href="styles.css?v=7">
+<link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 <header>
@@ -86,6 +86,14 @@
         <div class="phrase-actions">
           <button class="ghost small" id="pron-next">→</button>
         </div>
+      </div>
+      <div class="fine-box" id="fine-box">
+        <div class="fine-text" id="fine-text">🔬 <strong>Analyse son par son</strong> : un modèle de reconnaissance des sons compare votre voix à la transcription attendue ([θ] dit [s], [ɪ] dit [iː], h avalé…). Téléchargement unique de 240 Mo (Wi-Fi conseillé), puis tout reste sur l'appareil, même hors ligne.</div>
+        <div class="fine-actions">
+          <button class="btn outline" id="fine-download" type="button">Télécharger le modèle</button>
+          <label class="fine-toggle hidden" id="fine-toggle-wrap"><input type="checkbox" id="fine-toggle"> Analyse son par son</label>
+        </div>
+        <div class="score-bar hidden" id="fine-progress"><div style="width:0%"></div></div>
       </div>
       <div class="controls">
         <button class="btn" id="btn-listen">🔊 Écouter le modèle</button>
@@ -187,6 +195,11 @@
     <label>Vitesse de la voix</label>
     <input type="range" id="set-rate" min="0.5" max="1.2" step="0.05" value="0.95">
     <span id="rate-value">0.95</span>
+    <label>Analyse son par son</label>
+    <div class="voice-row">
+      <span class="muted" id="fine-status">Modèle non téléchargé.</span>
+      <button class="btn outline hidden" id="fine-remove" type="button">Supprimer le modèle (240 Mo)</button>
+    </div>
     <label>Objectif quotidien (exercices)</label>
     <input type="number" id="set-goal" min="1" max="20" value="3">
     <div class="modal-actions">
@@ -197,8 +210,10 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="js/data.js?v=7"></script>
-<script src="js/app.js?v=7"></script>
+<script src="js/data.js?v=8"></script>
+<script src="js/phonemes.js?v=8"></script>
+<script src="js/phoneme.js?v=8"></script>
+<script src="js/app.js?v=8"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

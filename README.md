@@ -25,6 +25,34 @@ L'app est publiée sur GitHub Pages (adresse https). Ouvrez-la dans Safari, puis
 reconnaissance vocale, qui passe par Apple). La progression est gardée
 séparément sur chaque appareil.
 
+## Analyse son par son (Forge phonétique)
+
+Dans la Forge phonétique, le bouton **Télécharger le modèle** installe une fois
+pour toutes un modèle de reconnaissance des sons (wav2vec2 « espeak-cv-ft » de
+Meta, version allégée de 240 Mo, depuis huggingface.co). Ensuite tout se passe
+sur l'appareil, même hors ligne : votre voix n'est envoyée nulle part.
+
+L'app compare chaque son prononcé à la transcription attendue (`js/phonemes.js`)
+et signale sur le mot ce qui a été entendu à la place, avec un conseil :
+[θ] dit [s], [ð] dit [z], [ɪ] dit [iː], h avalé, voyelle trop ouverte…
+Les voyelles réduites (schwa) et celles des petits mots grammaticaux ne sont pas
+notées, car leur forme pleine reste correcte. Le modèle se supprime dans ⚙.
+
+**Fiabilité mesurée** (300 phrases d'adultes non natifs annotées son par son,
+corpus speechocean762, et 73 phrases de locuteurs natifs, LibriSpeech) :
+chez un natif, environ 1 son sur 200 est signalé à tort ; chez un non-natif,
+environ la moitié des sons signalés correspondent aux erreurs relevées par les
+annotateurs, et l'essentiel des autres sont des [θ]→[s] ou [ð]→[z] qu'ils ont
+tolérés. L'accent tonique n'est **pas** évalué : l'essai (durée × énergie de la
+voyelle) signalait à tort un mot sur six chez les natifs.
+
+L'analyse prend quelques secondes par phrase (un seul cœur de calcul est
+disponible pour une page web hébergée sur GitHub Pages).
+
+Pour ajouter ou modifier des phrases : éditez `js/data.js`, puis régénérez les
+transcriptions avec `python3 tools/gen_phonemes.py` (nécessite `espeak-ng`).
+Une phrase sans transcription garde l'ancienne notation mot par mot.
+
 ## Les quatre modules
 
 | Module | Ce que vous y travaillez |
@@ -45,7 +73,9 @@ séparément sur chaque appareil.
 
 ## Fichiers
 
-- `index.html`, `styles.css`, `js/app.js`, `js/data.js` — l'application, sans dépendances.
+- `index.html`, `styles.css`, `js/app.js`, `js/data.js` — l'application.
+- `js/phoneme.js` — l'analyse son par son (onnxruntime-web chargé à la demande depuis jsDelivr, puis gardé hors ligne).
+- `js/phonemes.js` — transcriptions attendues, générées par `tools/gen_phonemes.py`.
 - `js/data.js` — la banque de contenu (phrases, scénarios, nuances) : modifiable
   librement pour ajouter vos propres phrases de vos domaines de spécialité.
 
