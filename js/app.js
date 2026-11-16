@@ -74,7 +74,7 @@ function voiceScore(v) {
   else if (lang.startsWith("en-ca")) sc += 40;
   else if (lang.startsWith("en")) sc += 20;
   if (/premium|neural|natural/i.test(n)) sc += 80;
-  else if (/enhanced|améliorée|amelioree|siri/i.test(n)) sc += 45;
+  else if (/enhanced|améliorée|amelioree|qualité|qualite|siri/i.test(n)) sc += 45;
   else if (/google/i.test(n)) sc += 35;
   if (GOOD_NAMES.test(n)) sc += 10;
   if (v.localService) sc += 5;          // marche hors ligne
