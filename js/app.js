@@ -64,7 +64,7 @@ function levelInfo() {
    voix standard, et on écarte les voix « fantaisie » de macOS ainsi que les
    voix robotiques « Eloquence » (Eddy, Flo, Reed…), très imprécises. */
 let voices = [];
-const NOVELTY = /\b(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|ralph|kathy|grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley|hysterical|deranged|pipe organ)\b/i;
+const NOVELTY = /\b(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|ralph|kathy|grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley|hysterical|deranged|pipe organ|mauvaises nouvelles|bonnes nouvelles|cloches|bulles|violoncelles|bouffon|orgue|trinoïdes|trinoides|murmure)\b/i;
 const GOOD_NAMES = /\b(ava|zoe|evan|nathan|joelle|noelle|tom|allison|susan|samantha|alex|aaron|nicky|jenny|aria|guy|michelle)\b/i;
 function voiceLang(v) { return (v.lang || "").replace("_", "-").toLowerCase(); }
 function voiceScore(v) {
