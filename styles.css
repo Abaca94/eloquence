@@ -271,3 +271,13 @@ button { touch-action: manipulation; }
 .fine-issues li span { color: var(--muted); }
 .fine-replay { margin-top: 1rem; }
 .btn:disabled { opacity: .6; cursor: wait; }
+
+/* ---------- Révision espacée ---------- */
+.review-card {
+  display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between;
+  background: var(--card); border: 1px solid var(--accent); border-radius: var(--radius);
+  padding: 1rem 1.3rem; margin: 1rem 0; line-height: 1.5;
+}
+.review-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+.review-actions .btn { padding: .5rem 1rem; }
+.chip-filter.review { border-color: var(--accent); color: var(--accent); }

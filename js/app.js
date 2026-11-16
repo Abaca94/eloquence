@@ -52,6 +52,44 @@ function addXP(n) {
     toast("🎖 Nouveau niveau : " + newLevel.level.name + " !");
   }
 }
+/* ---------- Révision espacée ----------
+   Un élément raté revient le lendemain, puis à 3, 7 et 16 jours s'il est réussi
+   à chaque fois ; un nouvel échec le ramène au lendemain. Après la dernière
+   étape, il sort de la liste. Clés : "p:" + phrase, "n:" + question|options. */
+const REVIEW_STEPS = [1, 3, 7, 16];
+function dayNum() { const d = new Date(); return Math.floor((d.getTime() - d.getTimezoneOffset() * 6e4) / 864e5); }
+function reviewMap() { if (!store.review) store.review = {}; return store.review; }
+function reviewUpdate(key, ok) {
+  const m = reviewMap(), r = m[key];
+  if (!ok) m[key] = { step: 0, due: dayNum() + REVIEW_STEPS[0] };
+  else if (r && r.due <= dayNum()) {
+    const step = r.step + 1;
+    if (step >= REVIEW_STEPS.length) delete m[key];
+    else m[key] = { step, due: dayNum() + REVIEW_STEPS[step] };
+  }
+  save(); renderReviewUI();
+}
+function reviewDue(prefix) {
+  const m = reviewMap(), t = dayNum();
+  return Object.keys(m).filter(k => k.startsWith(prefix) && m[k].due <= t).map(k => k.slice(prefix.length));
+}
+function nuanceKey(it) { return it.q + "|" + it.options.join("/"); }
+function duePhrases() { const due = new Set(reviewDue("p:")); return PHRASES.filter(p => due.has(p.en)); }
+function dueNuances() { const due = new Set(reviewDue("n:")); return NUANCES.filter(n => due.has(nuanceKey(n))); }
+function renderReviewUI() {
+  const np = duePhrases().length, nn = dueNuances().length, pending = Object.keys(reviewMap()).length;
+  const box = $("#review-card");
+  if (box) {
+    box.classList.toggle("hidden", np + nn === 0);
+    $("#review-text").textContent = [np ? np + (np > 1 ? " phrases" : " phrase") : "", nn ? nn + (nn > 1 ? " nuances" : " nuance") : ""].filter(Boolean).join(" et ") + " à revoir aujourd'hui";
+    $("#review-pron").classList.toggle("hidden", !np);
+    $("#review-nuance").classList.toggle("hidden", !nn);
+  }
+  const pr = $("#p-review");
+  if (pr) pr.textContent = pending ? pending + " élément(s) en révision, dont " + (np + nn) + " à revoir aujourd'hui." : "Aucun élément en révision pour l'instant.";
+  if ($("#pron-filters") && typeof renderPronFilters === "function" && typeof pronFilter !== "undefined") renderPronFilters();
+}
+
 function levelInfo() {
   let idx = 0;
   for (let i = 0; i < LEVELS.length; i++) if (store.xp >= LEVELS[i].xp) idx = i;
@@ -239,6 +277,7 @@ function renderDashboard() {
   const c = store.todayCount || 0;
   $("#daily-goal-progress").textContent = c + " / " + goal;
   $("#goal-fill").style.width = Math.min(100, (c / goal) * 100) + "%";
+  if (typeof pronFilter !== "undefined") renderReviewUI();
   $("#daily-tip").innerHTML = "💡 " + DAILY_TIPS[new Date().getDate() % DAILY_TIPS.length];
 }
 function renderHUD() {
@@ -251,8 +290,14 @@ function renderHUD() {
 /* ============================================================
    MODULE FORGE PHONÉTIQUE
    ============================================================ */
-let pronIdx = 0, pronFilter = "trap";
-function filterPhrases() { return PHRASES.filter(p => p.f === pronFilter); }
+let pronIdx = 0, pronFilter = "trap", reviewList = [];
+function filterPhrases() { return pronFilter === "review" ? reviewList : PHRASES.filter(p => p.f === pronFilter); }
+function openReviewPhrases() {
+  reviewList = duePhrases();
+  if (!reviewList.length) { pronFilter = "trap"; }
+  else pronFilter = "review";
+  pronIdx = 0; renderPronFilters(); renderPhrase();
+}
 function renderPronFilters() {
   const box = $("#pron-filters");
   box.innerHTML = "";
@@ -263,6 +308,14 @@ function renderPronFilters() {
     b.addEventListener("click", () => { pronFilter = f.id; pronIdx = 0; renderPronFilters(); renderPhrase(); });
     box.appendChild(b);
   });
+  const nDue = duePhrases().length;
+  if (nDue || pronFilter === "review") {
+    const b = document.createElement("button");
+    b.className = "chip-filter review" + (pronFilter === "review" ? " active" : "");
+    b.textContent = "🔁 À revoir · " + nDue;
+    b.addEventListener("click", openReviewPhrases);
+    box.prepend(b);
+  }
 }
 function currentPhrase() { return filterPhrases()[pronIdx]; }
 function renderPhrase() {
@@ -440,16 +493,25 @@ function showFineResult(r) {
     ${issues.length ? `<ul class="fine-issues">${issues.slice(0, 6).map(i => `<li class="${i.lvl}"><strong>${esc(i.w)}</strong> · ${esc(i.label)}<br><span>${esc(i.tip)}</span></li>`).join("")}</ul>`
       : `<div class="heard">Aucun son problématique détecté.</div>`}
     ${issues.length > 6 ? `<div class="heard">… et ${issues.length - 6} autre(s) point(s) mineur(s).</div>` : ""}
-    <div class="controls fine-replay"><button class="btn outline" id="btn-replay">▶ Réécouter ma voix</button><button class="btn outline" id="btn-replay-model">🔊 Le modèle</button></div>
+    <div class="controls fine-replay"><button class="btn outline" id="btn-compare">⇄ Comparer (modèle puis moi)</button><button class="btn outline" id="btn-replay">▶ Réécouter ma voix</button><button class="btn outline" id="btn-replay-model">🔊 Le modèle</button></div>
     <div class="heard">Analyse locale, son par son. Les sons réduits (schwa) ne sont pas notés ; une alerte isolée peut être une fausse alerte.</div>`;
   $("#btn-replay").addEventListener("click", playLastAudio);
+  $("#btn-compare").addEventListener("click", () => {
+    // Le modèle d'abord, puis votre enregistrement dès qu'il se termine.
+    speak(currentPhrase().en, parseFloat(store.rate));
+    if (player.src && !player.paused) player.addEventListener("ended", playLastAudio, { once: true });
+    else setTimeout(playLastAudio, 4500);
+  });
   $("#btn-replay-model").addEventListener("click", () => speak(currentPhrase().en, parseFloat(store.rate)));
   toast("Enregistré · +" + xp + " ⭐");
 }
 function recordScore(score) {
-  const st = store.phraseStats[pronFilter] || { n: 0, sum: 0 };
-  st.n++; st.sum += score; store.phraseStats[pronFilter] = st;
+  const ph = currentPhrase(), axis = ph.f;
+  const st = store.phraseStats[axis] || { n: 0, sum: 0 };
+  st.n++; st.sum += score; store.phraseStats[axis] = st;
   if (score > store.bestScore) store.bestScore = score;
+  // Révision espacée : sous 75, la phrase reviendra ; à 75 ou plus, elle avance d'une étape.
+  reviewUpdate("p:" + ph.en, score >= 75);
 }
 function finishAttempt(heard, alternatives) {
   listening = false;
@@ -647,7 +709,9 @@ $("#btn-dialogue-exit").addEventListener("click", () => {
    ============================================================ */
 let nuanceQueue = [], nuancePos = 0, nuanceLock = false;
 function startNuanceRound() {
-  nuanceQueue = shuffle(NUANCES);
+  // Les éléments à revoir aujourd'hui passent en premier.
+  const due = dueNuances();
+  nuanceQueue = shuffle(due).concat(shuffle(NUANCES.filter(n => !due.includes(n))));
   nuancePos = 0;
   showNuanceItem();
 }
@@ -661,7 +725,8 @@ function showNuanceItem() {
     it.good = Math.floor(Math.random() * it.options.length);
     it.target = it.options[it.good];
   }
-  $("#nuance-type").textContent = NUANCE_TYPES[it.type];
+  const inReview = !!reviewMap()["n:" + nuanceKey(it)];
+  $("#nuance-type").textContent = (inReview ? "🔁 Révision · " : "") + NUANCE_TYPES[it.type];
   $("#nuance-question").textContent = it.q || it.audio;
   $("#nuance-context").textContent = it.ctx || "";
   $("#nuance-explain").classList.add("hidden");
@@ -693,10 +758,12 @@ function pickNuance(btn, op, it) {
   const goodBtn = [...$$("#nuance-options .opt")].find(b => b.textContent === it.options[it.good]);
   if (btn.textContent === it.options[it.good]) {
     btn.classList.add("reveal-good");
+    reviewUpdate("n:" + nuanceKey(it), true);
     addXP(10);
     toast("Juste ! +10 ⭐");
   } else {
     btn.classList.add("reveal-bad");
+    reviewUpdate("n:" + nuanceKey(it), false);
     addXP(3);
     goodBtn.classList.add("reveal-good");
     toast("Pas tout à fait — regardez l'explication.");
@@ -786,6 +853,9 @@ $("#set-goal").addEventListener("input", (e) => { store.goal = parseInt(e.target
 /* ---------- Démarrage ---------- */
 renderHUD();
 renderDashboard();
+$("#review-pron").addEventListener("click", () => { showTab("pronunciation"); openReviewPhrases(); });
+$("#review-nuance").addEventListener("click", () => { showTab("nuance"); startNuanceRound(); });
+renderReviewUI();
 renderPronFilters();
 renderPhrase();
 renderScenarios();

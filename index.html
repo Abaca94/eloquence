@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Éloquence — Atelier d'anglais oral</title>
-<link rel="stylesheet" href="styles.css?v=10">
+<link rel="stylesheet" href="styles.css?v=11">
 </head>
 <body>
 <header>
@@ -45,6 +45,13 @@
       <h2>Bonjour, et bienvenue à votre atelier.</h2>
       <p>Objectif du jour : <strong id="daily-goal-text">3 exercices</strong> · <span id="daily-goal-progress">0 / 3</span></p>
       <div class="goal-bar"><div id="goal-fill"></div></div>
+    </div>
+    <div class="review-card hidden" id="review-card">
+      <div><strong>🔁 Révision du jour</strong><br><span id="review-text"></span></div>
+      <div class="review-actions">
+        <button class="btn primary" id="review-pron">Revoir les phrases</button>
+        <button class="btn primary" id="review-nuance">Revoir les nuances</button>
+      </div>
     </div>
     <div class="cards">
       <div class="card" data-open="pronunciation">
@@ -168,6 +175,7 @@
     </div>
     <h3 style="margin-top:2rem">Force des axes de travail</h3>
     <div id="strength-list"></div>
+    <p class="muted" id="p-review" style="margin-top:1.2rem"></p>
     <button class="btn danger" id="btn-reset" style="margin-top:2rem">Réinitialiser ma progression</button>
   </section>
 </main>
@@ -216,11 +224,11 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="js/data.js?v=10"></script>
-<script src="js/phonemes.js?v=10"></script>
-<script src="js/phoneme.js?v=10"></script>
-<script src="js/audio-index.js?v=10"></script>
-<script src="js/app.js?v=10"></script>
+<script src="js/data.js?v=11"></script>
+<script src="js/phonemes.js?v=11"></script>
+<script src="js/phoneme.js?v=11"></script>
+<script src="js/audio-index.js?v=11"></script>
+<script src="js/app.js?v=11"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
