@@ -1,6 +1,6 @@
 /* Éloquence — service worker : l'app fonctionne hors ligne une fois ouverte.
    Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement. */
-const VERSION = "eloquence-v6";
+const VERSION = "eloquence-v8";
 /* Caches durables, gardés entre les versions : modèle de phonèmes (js/phoneme.js) et moteur onnxruntime. */
 const KEEP = ["eloquence-model-v1", "eloquence-runtime-v1"];
 const RUNTIME_PREFIX = "https://cdn.jsdelivr.net/npm/onnxruntime-web@";
@@ -26,7 +26,8 @@ self.addEventListener("fetch", (e) => {
   }
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request).then((res) => {
+    // cache: "no-cache" contourne le cache HTTP de GitHub Pages (10 min) pour avoir toujours la dernière version.
+    fetch(e.request.url, { cache: "no-cache" }).then((res) => {
       const copy = res.clone();
       caches.open(VERSION).then((c) => c.put(e.request, copy));
       return res;
