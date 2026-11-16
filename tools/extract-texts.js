@@ -1,0 +1,10 @@
+const fs=require('fs');
+eval(fs.readFileSync('/home/claude/eloquence/js/data.js','utf8')+';global.D={PHRASES,SCENARIOS,NUANCES}');
+const out=new Map(); const add=(t,slow)=>{ if(typeof t==='string' && t.trim()) out.set(t+(slow?'|slow':''),{text:t,slow:!!slow}); };
+D.PHRASES.forEach(p=>{add(p.en);add(p.en,true);});
+const walk=o=>{ if(Array.isArray(o)) o.forEach(walk); else if(o&&typeof o==='object') for(const [k,v] of Object.entries(o)){ if(['bot','reply','fallback'].includes(k)) add(v); else walk(v);} };
+walk(D.SCENARIOS);
+D.NUANCES.filter(n=>n.type==='sound').forEach(n=>{n.options.forEach(o=>add(o,true)); add(n.options.join(". ... ")+".",true);});
+add("Let's walk through the thorough analysis of the data.");
+fs.writeFileSync('/home/claude/tts/texts.json',JSON.stringify([...out.values()],null,1));
+console.log(out.size);

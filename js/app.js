@@ -118,17 +118,47 @@ function loadVoices() {
 }
 speechSynthesis.onvoiceschanged = loadVoices;
 let speakTimer = null;
+/* Voix naturelles pré-enregistrées : même rendu sur Mac, iPhone et iPad,
+   hors ligne. La voix système ne sert plus que de secours, pour un texte
+   qui n'a pas d'enregistrement. */
+const NATURAL_VOICES = { af_heart: "Heart · voix féminine", am_michael: "Michael · voix masculine" };
+const player = new Audio();
+player.preload = "auto";
+function naturalVoice() {
+  const v = store.naturalVoice === undefined ? "af_heart" : store.naturalVoice;
+  return NATURAL_VOICES[v] ? v : null;
+}
+function playRecorded(text, rate, slowWanted) {
+  const nv = naturalVoice();
+  if (!nv || typeof AUDIO_INDEX === "undefined") return false;
+  const keys = slowWanted ? [text + "|slow", text] : [text, text + "|slow"];
+  const key = keys.find(k => AUDIO_INDEX[k]);
+  if (!key) return false;
+  const isSlow = key.endsWith("|slow");
+  player.src = "audio/" + nv + "/" + AUDIO_INDEX[key] + ".mp3";
+  // Les fichiers « normaux » sont enregistrés à 0.95 ; la vitesse réglée s'applique par-dessus.
+  player.playbackRate = isSlow ? 1 : Math.min(2, Math.max(0.5, rate / 0.95));
+  if ("preservesPitch" in player) player.preservesPitch = true;
+  if ("webkitPreservesPitch" in player) player.webkitPreservesPitch = true;
+  player.play().catch(() => speakSystem(text, rate));
+  return true;
+}
 function speak(text, rateOverride) {
   speechSynthesis.cancel();
   clearTimeout(speakTimer);
+  player.pause();
+  const rate = rateOverride || parseFloat(store.rate) || 0.95;
+  if (playRecorded(text, rate, !!rateOverride && rateOverride < 0.9)) return;
+  speakSystem(text, rate);
+}
+function speakSystem(text, rate) {
   const u = new SpeechSynthesisUtterance(text);
   const v = voices.find(x => x.voiceURI === store.voiceURI) || voices[0];
   if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-US"; }
-  u.rate = rateOverride || parseFloat(store.rate) || 0.95;
+  u.rate = rate;
   u.pitch = 1;
   // Safari (iPhone/iPad) perd parfois une phrase lancée juste après cancel().
   speakTimer = setTimeout(() => speechSynthesis.speak(u), 60);
-  return u;
 }
 loadVoices();
 
@@ -741,6 +771,11 @@ $("#set-voice").addEventListener("change", (e) => {
   speak("Let's walk through the thorough analysis of the data.");
 });
 $("#voice-diag").addEventListener("toggle", loadVoices);
+$("#set-natural").value = naturalVoice() || "system";
+$("#set-natural").addEventListener("change", (e) => {
+  store.naturalVoice = e.target.value; save();
+  speak("Let's walk through the thorough analysis of the data.");
+});
 $("#voice-test").addEventListener("click", () => speak("Let's walk through the thorough analysis of the data."));
 $("#voice-auto").addEventListener("click", () => { store.voiceChosen = false; save(); loadVoices(); speak("Let's walk through the thorough analysis of the data."); });
 $("#set-rate").addEventListener("input", (e) => {
