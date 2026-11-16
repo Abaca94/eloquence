@@ -629,6 +629,7 @@ $("#set-voice").addEventListener("change", (e) => {
   store.voiceURI = e.target.value; store.voiceChosen = true; save();
   speak("Let's walk through the thorough analysis of the data.");
 });
+$("#voice-diag").addEventListener("toggle", loadVoices);
 $("#voice-test").addEventListener("click", () => speak("Let's walk through the thorough analysis of the data."));
 $("#voice-auto").addEventListener("click", () => { store.voiceChosen = false; save(); loadVoices(); speak("Let's walk through the thorough analysis of the data."); });
 $("#set-rate").addEventListener("input", (e) => {
