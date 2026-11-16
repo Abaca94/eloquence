@@ -58,40 +58,69 @@ function levelInfo() {
   return { idx, level: LEVELS[idx] };
 }
 
-/* ---------- Synthèse vocale (anglais américain) ---------- */
+/* ---------- Synthèse vocale (anglais américain) ----------
+   Les voix varient beaucoup selon l'appareil. On classe les voix anglaises
+   par qualité : Premium/Neural > Améliorée/Enhanced > voix Siri/Google >
+   voix standard, et on écarte les voix « fantaisie » de macOS ainsi que les
+   voix robotiques « Eloquence » (Eddy, Flo, Reed…), très imprécises. */
 let voices = [];
+const NOVELTY = /\b(albert|bad news|bahh|bells|boing|bubbles|cellos|good news|jester|organ|superstar|trinoids|whisper|wobble|zarvox|fred|junior|ralph|kathy|grandma|grandpa|eddy|flo|reed|rocko|sandy|shelley|hysterical|deranged|pipe organ)\b/i;
+const GOOD_NAMES = /\b(ava|zoe|evan|nathan|joelle|noelle|tom|allison|susan|samantha|alex|aaron|nicky|jenny|aria|guy|michelle)\b/i;
+function voiceLang(v) { return (v.lang || "").replace("_", "-").toLowerCase(); }
+function voiceScore(v) {
+  const n = v.name || "", lang = voiceLang(v);
+  let sc = 0;
+  if (lang.startsWith("en-us")) sc += 100;
+  else if (lang.startsWith("en-ca")) sc += 40;
+  else if (lang.startsWith("en")) sc += 20;
+  if (/premium|neural|natural/i.test(n)) sc += 80;
+  else if (/enhanced|améliorée|amelioree|siri/i.test(n)) sc += 45;
+  else if (/google/i.test(n)) sc += 35;
+  if (GOOD_NAMES.test(n)) sc += 10;
+  if (v.localService) sc += 5;          // marche hors ligne
+  if (NOVELTY.test(n)) sc -= 200;
+  return sc;
+}
+function voiceLabel(v) {
+  const sc = voiceScore(v);
+  const tier = sc >= 180 ? "★★★" : sc >= 130 ? "★★" : sc >= 100 ? "★" : "";
+  return (tier ? tier + " " : "") + v.name + " (" + v.lang + ")";
+}
 function loadVoices() {
-  voices = speechSynthesis.getVoices().filter(v => /^en(-|_)|^en$/i.test(v.lang));
-  // Priorité : en-US d'abord, voix Human/Avecn dépassées ensuite
-  voices.sort((a, b) => {
-    const ua = a.lang.replace("_", "-").toLowerCase().startsWith("en-us") ? 0 : 1;
-    const ub = b.lang.replace("_", "-").toLowerCase().startsWith("en-us") ? 0 : 1;
-    return ua - ub;
-  });
+  voices = speechSynthesis.getVoices()
+    .filter(v => /^en(-|_|$)/i.test(v.lang))
+    .filter(v => !NOVELTY.test(v.name))
+    .sort((a, b) => voiceScore(b) - voiceScore(a) || a.name.localeCompare(b.name));
+  // Voix choisie à la main : on la garde. Sinon on prend la meilleure
+  // disponible (ce qui suit automatiquement l'installation d'une voix Premium).
+  if (!(store.voiceChosen && voices.some(v => v.voiceURI === store.voiceURI)) && voices.length) {
+    if (store.voiceURI !== voices[0].voiceURI) { store.voiceURI = voices[0].voiceURI; store.voiceChosen = false; save(); }
+  }
   const sel = $("#set-voice");
   if (!sel) return;
   sel.innerHTML = "";
   voices.forEach(v => {
     const o = document.createElement("option");
     o.value = v.voiceURI;
-    o.textContent = v.name + " (" + v.lang + ")";
+    o.textContent = voiceLabel(v);
     sel.appendChild(o);
   });
-  if (store.voiceURI && voices.some(v => v.voiceURI === store.voiceURI)) {
-    sel.value = store.voiceURI;
-  } else if (voices.length) {
-    sel.value = voices[0].voiceURI; store.voiceURI = voices[0].voiceURI; save();
-  }
+  if (store.voiceURI) sel.value = store.voiceURI;
+  const hint = $("#voice-hint");
+  if (hint) hint.classList.toggle("hidden", voices.length > 0 && voiceScore(voices[0]) >= 180);
 }
 speechSynthesis.onvoiceschanged = loadVoices;
+let speakTimer = null;
 function speak(text, rateOverride) {
   speechSynthesis.cancel();
+  clearTimeout(speakTimer);
   const u = new SpeechSynthesisUtterance(text);
-  const v = voices.find(x => x.voiceURI === (store.voiceURI || (voices[0] && voices[0].voiceURI)));
-  if (v) { u.voice = v; u.lang = v.lang; }
+  const v = voices.find(x => x.voiceURI === store.voiceURI) || voices[0];
+  if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-US"; }
   u.rate = rateOverride || parseFloat(store.rate) || 0.95;
   u.pitch = 1;
-  speechSynthesis.speak(u);
+  // Safari (iPhone/iPad) perd parfois une phrase lancée juste après cancel().
+  speakTimer = setTimeout(() => speechSynthesis.speak(u), 60);
   return u;
 }
 loadVoices();
@@ -478,9 +507,11 @@ function showNuanceItem() {
   nuanceLock = false;
   const it = nuanceQueue[nuancePos];
   // Pour les exercices auditifs, la bonne option est celle du mot entendu
+  // On tire le mot au hasard parmi les options : sinon la réponse serait
+  // toujours la même et l'oreille ne serait pas vraiment entraînée.
   if (it.audio) {
-    const gi = it.options.indexOf(it.audio[0]);
-    if (gi >= 0) it.good = gi;
+    it.good = Math.floor(Math.random() * it.options.length);
+    it.target = it.options[it.good];
   }
   $("#nuance-type").textContent = NUANCE_TYPES[it.type];
   $("#nuance-question").textContent = it.q || it.audio;
@@ -493,7 +524,7 @@ function showNuanceItem() {
     const b = document.createElement("button");
     b.className = "btn primary";
     b.textContent = "🔊 Écouter le mot";
-    b.addEventListener("click", () => speak(it.audio[0], 0.85));
+    b.addEventListener("click", () => speak(it.target, 0.85));
     zone.appendChild(b);
   } else zone.innerHTML = "";
   const optBox = $("#nuance-options");
@@ -526,7 +557,8 @@ function pickNuance(btn, op, it) {
   ex.innerHTML = "<strong>« " + it.options[it.good] + " »</strong> — " + it.tip;
   ex.classList.remove("hidden");
   $("#nuance-next").classList.remove("hidden");
-  if (it.type === "sound") speak(it.audio[0], 0.85);
+  // Après la réponse, on fait entendre les mots à la suite pour comparer.
+  if (it.type === "sound") speak(it.options.join(". ... ") + ".", 0.8);
 }
 $("#nuance-next").addEventListener("click", () => {
   nuancePos++;
@@ -586,7 +618,12 @@ $("#settings-close").addEventListener("click", () => {
   $("#settings-modal").classList.add("hidden");
   $("#settings-modal").classList.remove("open");
 });
-$("#set-voice").addEventListener("change", (e) => { store.voiceURI = e.target.value; save(); });
+$("#set-voice").addEventListener("change", (e) => {
+  store.voiceURI = e.target.value; store.voiceChosen = true; save();
+  speak("Let's walk through the thorough analysis of the data.");
+});
+$("#voice-test").addEventListener("click", () => speak("Let's walk through the thorough analysis of the data."));
+$("#voice-auto").addEventListener("click", () => { store.voiceChosen = false; save(); loadVoices(); speak("Let's walk through the thorough analysis of the data."); });
 $("#set-rate").addEventListener("input", (e) => {
   store.rate = e.target.value; $("#rate-value").textContent = e.target.value; save();
 });

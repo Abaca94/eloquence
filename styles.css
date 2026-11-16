@@ -249,3 +249,10 @@ button { touch-action: manipulation; }
   .english { font-size: 1.3rem; }
   .controls .btn { flex: 1 1 auto; }
 }
+
+/* ---------- Réglages des voix ---------- */
+.voice-row { display: flex; gap: .5rem; flex-wrap: wrap; margin: .5rem 0; }
+.voice-row .btn { padding: .45rem .9rem; font-size: .88rem; }
+.voice-hint { margin: .3rem 0 .8rem; font-size: .85rem; color: var(--muted); line-height: 1.5; }
+.voice-hint summary { cursor: pointer; color: var(--accent2); }
+.voice-hint p { margin-top: .4rem; }

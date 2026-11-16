@@ -1,6 +1,6 @@
 /* Éloquence — service worker : l'app fonctionne hors ligne une fois ouverte.
    Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement. */
-const VERSION = "eloquence-v1";
+const VERSION = "eloquence-v2";
 const FILES = [
   "./", "index.html", "styles.css", "js/app.js", "js/data.js",
   "manifest.webmanifest", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"
