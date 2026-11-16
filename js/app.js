@@ -181,10 +181,34 @@ function playRecorded(text, rate, slowWanted) {
   player.play().catch(() => speakSystem(text, rate));
   return true;
 }
+/* File d'attente : speakNext() enchaîne une phrase après celle en cours (dialogues),
+   alors que speak() interrompt tout et parle immédiatement. */
+let speakQueue = [], speakBusy = false, speakWatch = null;
+function speechDone() {
+  speakBusy = false; clearTimeout(speakWatch);
+  const nxt = speakQueue.shift();
+  if (nxt) speakNow(nxt[0], nxt[1]);
+}
+player.addEventListener("ended", speechDone);
+player.addEventListener("error", speechDone);
+function speakNext(text, rateOverride) {
+  if (speakBusy) speakQueue.push([text, rateOverride]); else speakNow(text, rateOverride);
+}
+function stopSpeaking() {
+  speakQueue = []; speakBusy = false; clearTimeout(speakWatch); clearTimeout(speakTimer);
+  speechSynthesis.cancel(); player.pause();
+}
 function speak(text, rateOverride) {
+  speakQueue = [];
+  speakNow(text, rateOverride);
+}
+function speakNow(text, rateOverride) {
   speechSynthesis.cancel();
   clearTimeout(speakTimer);
   player.pause();
+  speakBusy = true;
+  // Garde-fou : si aucun signal de fin n'arrive, on débloque la file.
+  clearTimeout(speakWatch); speakWatch = setTimeout(speechDone, 30000);
   const rate = rateOverride || parseFloat(store.rate) || 0.95;
   if (playRecorded(text, rate, !!rateOverride && rateOverride < 0.9)) return;
   speakSystem(text, rate);
@@ -195,6 +219,7 @@ function speakSystem(text, rate) {
   if (v) { u.voice = v; u.lang = v.lang; } else { u.lang = "en-US"; }
   u.rate = rate;
   u.pitch = 1;
+  u.onend = speechDone; u.onerror = speechDone;
   // Safari (iPhone/iPad) perd parfois une phrase lancée juste après cancel().
   speakTimer = setTimeout(() => speechSynthesis.speak(u), 60);
 }
@@ -584,6 +609,8 @@ function bubble(cls, textEN, textFR, meta) {
   log.scrollTop = log.scrollHeight;
 }
 function startScenario(s) {
+  stopSpeaking();
+  $("#dlg-text").disabled = false;
   scenario = s; dlgXP = 0; dlgLives = 3;
   scNode = s.nodes.start;
   $("#dialogue-select").classList.add("hidden");
@@ -596,7 +623,7 @@ function startScenario(s) {
 }
 function showBotNode() {
   bubble("bubble-agent", scNode.bot, scNode.botFr);
-  speak(scNode.bot);
+  speakNext(scNode.bot);
 }
 function updateMeters() {
   $("#dialogue-score").textContent = dlgXP;
@@ -606,19 +633,18 @@ function endScenario() {
   if (!store.scenariosDone.includes(scenario.id)) store.scenariosDone.push(scenario.id);
   save();
   bubble("bubble-agent", "— End of this conversation.", "Fin de la conversation · total de la séance : " + dlgXP + " points ⭐. Rejouez-la ou ouvrez une autre situation.");
+  // On laisse la conversation affichée pour la relire ; « Quitter » ramène à la liste.
   $("#dlg-text").disabled = true;
-  setTimeout(() => {
-    $("#dialogue-run").classList.add("hidden");
-    $("#dialogue-select").classList.remove("hidden");
-    $("#dlg-text").disabled = false;
-    renderScenarios(); renderHUD();
-  }, 1800);
+  renderHUD();
 }
 function answerDialogUED(transcript) {
   if (!transcript.trim()) return;
   bubble("bubble-user", transcript);
   const text = normalize(transcript);
-  const match = (scNode.branches || []).find(b => b.keywords.some(k => text.includes(normalize(k))));
+  // Mots courts : mot entier ; mots longs : début de mot (« translat » reconnaît « translated »).
+  const padded = " " + text + " ";
+  const hit = (k) => { const n = normalize(k); return n.length <= 3 ? padded.includes(" " + n + " ") : padded.includes(" " + n); };
+  const match = (scNode.branches || []).find(b => b.keywords.some(hit));
   if (match) {
     const gain = 15 + (match.praise ? 5 : 0);
     dlgXP += gain;
@@ -632,7 +658,7 @@ function answerDialogUED(transcript) {
       dlgXP += 10; updateMeters();
       setTimeout(() => {
         bubble("bubble-agent", nextNode.bot, nextNode.botFr);
-        speak(nextNode.bot);
+        speakNext(nextNode.bot);
         endScenario();
       }, 1200);
     } else if (nextNode) {
@@ -688,7 +714,7 @@ $("#btn-skip").addEventListener("click", () => {
     const nxtNode = scenario.nodes[nxt];
     if (nxtNode.end) {
       dlgXP += 10; updateMeters();
-      setTimeout(() => { bubble("bubble-agent", nxtNode.bot, nxtNode.botFr); speak(nxtNode.bot); endScenario(); }, 900);
+      setTimeout(() => { bubble("bubble-agent", nxtNode.bot, nxtNode.botFr); speakNext(nxtNode.bot); endScenario(); }, 900);
       stopSkipHere();
       return;
     }
@@ -701,7 +727,9 @@ $("#btn-skip").addEventListener("click", () => {
 $("#btn-dialogue-exit").addEventListener("click", () => {
   $("#dialogue-run").classList.add("hidden");
   $("#dialogue-select").classList.remove("hidden");
-  speechSynthesis.cancel();
+  stopSpeaking();
+  $("#dlg-text").disabled = false;
+  renderScenarios();
 });
 
 /* ============================================================

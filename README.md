@@ -58,7 +58,7 @@ Une phrase sans transcription garde l'ancienne notation mot par mot.
 | Module | Ce que vous y travaillez |
 |---|---|
 | **Forge phonétique** | Phrases classées en 5 axes (pièges sonores FR→EN, technique, business, rythme & liaisons, chiffres/dates US). Écoute du modèle (voix normale ou lente), puis production au micro : score par mot, mots réussis / ratés / décalés, conseils de spécialiste. |
-| **Tête-à-tête** | 5 scénarios professionnels à embranchements : kick-off de projet, appel client incident, Q&A technique après présentation, petit talk en conférence, négociation de contrat. Vous répondez à voix haute ou au clavier ; l'agent reconnaît vos formulations (indices à la demande), corrige et vous félicite. |
+| **Tête-à-tête** | 8 scénarios professionnels : kick-off de projet, appel client incident, questions après une présentation, conversation en conférence, négociation de contrat, ambiguïté à lever avec un ingénieur, délai raccourci à refuser, critique de traduction à gérer. Vous répondez à voix haute ou au clavier ; l'agent reconnaît vos formulations (indices à la demande), corrige et vous félicite. |
 | **Nuances** | Oreille discriminante (ship/sheep, cart/card…), registre juste (réponses professionnelles vs familiarité vs bureaucratese), synonymes techniques, collocations américaines. |
 | **Progression** | Niveaux « métier » (Conversante → Maîtresse de l'oral),⭐ fidélité, série de jours, force de chaque axe en pourcentage. |
 

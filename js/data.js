@@ -307,8 +307,8 @@ const SCENARIOS = [
         hints: ["Good morning, everyone. My name is…", "I've been working as a technical translator for… years", "My area of expertise covers engineering, automotive and energy documentation"],
         branches: [
           { keywords: ["name", "translator", "experience", "years", "expertise", "translate", "background"],
-            reply: "Impressive background — you've clearly seen your share of technical documentation. Out of curiosity, what would you say is your strongest domain?",
-            replyFr: "Un parcours impressionnant — on voit que la documentation technique ne vous fait pas peur. Par curiosité, quel est votre domaine le plus solide ?",
+            reply: "Impressive background. You've clearly seen your share of technical documentation.",
+            replyFr: "Un parcours impressionnant. On voit que la documentation technique ne vous fait pas peur.",
             next: "n2", praise: true },
         ],
         fallback: "Let me rephrase: tell us your name, how long you've been translating, and the type of documents you usually handle.",
@@ -316,22 +316,22 @@ const SCENARIOS = [
         next: "start"
       },
       n2: {
-        bot: "Makes sense. Now, the deliverables. We need the safety datasheets translated by end of month — roughly forty pages. Do you see any obstacle from your end?",
-        botFr: "Très bien. Passons aux livrables. Nous avons besoin des fiches de sécurité traduites d'ici la fin du mois — environ quarante pages. Voyez-vous un obstacle de votre côté ?",
+        bot: "Now, the deliverables. We need the safety datasheets translated by the end of the month, roughly forty pages. Do you see any obstacle on your end?",
+        botFr: "Passons aux livrables. Nous avons besoin des fiches de sécurité traduites d'ici la fin du mois, environ quarante pages. Voyez-vous un obstacle de votre côté ?",
         hints: ["Forty pages is feasible, provided…", "I'd suggest breaking it into batches of…", "I don't expect any issue as long as…"],
         branches: [
           { keywords: ["feasible", "possible", "no problem", "issue", "obstacle", "concern", "batch", "schedule", "timeline", "deadline", "provided"],
-            reply: "Perfect. We'll split it into four batches of ten pages, reviewed as we go. Any question about terminology?",
-            replyFr: "Parfait. Nous découperons en quatre lots de dix pages, revus au fur et à mesure. Une question sur la terminologie ?",
+            reply: "Perfect. We'll split it into four batches of ten pages and review as we go.",
+            replyFr: "Parfait. Nous découperons en quatre lots de dix pages, revus au fur et à mesure.",
             next: "n3", praise: true },
         ],
-        fallback: "Give an assessment: « No major obstacle, provided that… » or « I would need… ».",
-        fallbackFr: "Donnez une évaluation : « Pas d'obstacle majeur, à condition que… » ou « J'aurais besoin de… ».",
+        fallback: "Give us your assessment. For example: no major obstacle, provided that we agree on batches.",
+        fallbackFr: "Donnez votre évaluation. Par exemple : pas d'obstacle majeur, à condition de s'entendre sur des lots.",
         next: "n2"
       },
       n3: {
-        bot: "One terminology point: the client wants « control panel » rendered consistently throughout. In one sentence — how would you handle a term with no single equivalent?",
-        botFr: "Un point terminologique : le client veut que « control panel » soit traduit de façon cohérente tout au long. En une phrase — comment gèreriez-vous un terme sans équivalent unique ?",
+        bot: "One terminology point: the client wants the term control panel rendered consistently throughout. How would you handle a term with no single equivalent?",
+        botFr: "Un point de terminologie : le client veut que le terme « control panel » soit rendu de façon homogène partout. Comment traiteriez-vous un terme sans équivalent unique ?",
         hints: ["I would build a glossary and…", "When there's no perfect equivalent, I usually…"],
         branches: [
           { keywords: ["glossary", "consistent", "consistency", "term base", "termbase", "choice", "document", "explanation", "context"],
@@ -339,13 +339,13 @@ const SCENARIOS = [
             replyFr: "C'est exactement ce que j'attends d'une professionnelle. Nous créerons un glossaire partagé dès le premier jour.",
             next: "outro", praise: true },
         ],
-        fallback: "Essayez : « First I would… , and then I'd document it in a glossary. »",
-        fallbackFr: "Essayez : « D'abord je… , puis je le documenterais dans un glossaire. »",
+        fallback: "Try this structure: first I would check the context, and then I'd document the choice in a glossary.",
+        fallbackFr: "Essayez cette structure : d'abord je vérifierais le contexte, puis je consignerais le choix dans un glossaire.",
         next: "n3"
       },
       outro: {
-        bot: "This was a very promising conversation. I'll send you the contract draft this afternoon — and congrats on making it through your first pitch in English.",
-        botFr: "Conversation très prometteuse. Je vous envoie le brouillon du contrat cet après-midi — et bravo pour votre premier pitch en anglais.",
+        bot: "This was a very promising conversation. I'll send you the contract draft this afternoon. Welcome aboard.",
+        botFr: "C'était un échange très prometteur. Je vous envoie le projet de contrat cet après-midi. Bienvenue à bord.",
         hints: [], branches: [], next: null, end: true
       }
     }
@@ -364,36 +364,36 @@ const SCENARIOS = [
             replyFr: "Cela a commencé ce matin, juste après le retour du courant. L'écran se réinitialise chaque fois qu'on passe au menu de diagnostic.",
             next: "n2", praise: true },
         ],
-        fallback: "Show some empathy first, then ask a precise question: « When exactly does it happen? Does it reset at startup? »",
-        fallbackFr: "Montrez d'abord de l'empathie, puis posez une question précise : « Quand exactement cela se produit-il ? Se réinitialise-t-il au démarrage ? »",
+        fallback: "Show some empathy first, then ask a precise question. For example: I'm sorry to hear that. When exactly does it happen?",
+        fallbackFr: "Montrez d'abord de l'empathie, puis posez une question précise. Par exemple : je suis désolée de l'apprendre. Quand cela se produit-il exactement ?",
         next: "start"
       },
       n2: {
-        bot: "Power outage this morning — that rings a bell. Would you be able to walk me through the reset procedure over the phone?",
-        botFr: "Coupure de courant ce matin — cela me rappelle quelque chose. Pourriez-vous me guider pas à pas dans la procédure de réinitialisation par téléphone ?",
+        bot: "Come to think of it, we did have a power outage last night. Could you walk me through the reset procedure over the phone?",
+        botFr: "Maintenant que j'y pense, nous avons eu une coupure de courant cette nuit. Pourriez-vous me guider dans la procédure de réinitialisation par téléphone ?",
         hints: ["Sure. First, switch off the main breaker…", "Of course. First thing to check would be…", "Then press and hold the…"],
         branches: [
           { keywords: ["first", "then", "next", "check", "switch", "press", "hold", "restart", "breaker", "off", "wait", "sequence"],
-            reply: "Done — the display is back and stable now. That was remarkably clear, thank you.",
-            replyFr: "C'est fait — l'écran est revenu et stable. C'était remarquablement clair, merci.",
+            reply: "Done. The display is back and stable now. That was remarkably clear, thank you.",
+            replyFr: "C'est fait. L'écran est revenu et il est stable. C'était remarquablement clair, merci.",
             next: "n3", praise: true },
         ],
-        fallback: "Structure the sequence: « First… , then… , and finally… ».",
-        fallbackFr: "Structurez une séquence : « D'abord… , ensuite… , et enfin… ».",
+        fallback: "Structure the sequence: first, then, and finally.",
+        fallbackFr: "Structurez la séquence : d'abord, ensuite, et enfin.",
         next: "n2"
       },
       n3: {
-        bot: "By the way — this is the third unit with a similar issue after a power outage. Should we be worried about the firmware?",
-        botFr: "Au fait — c'est la troisième unité avec le même souci après une coupure. Devrions-nous nous inquiéter du firmware ?",
+        bot: "By the way, this is the third unit with a similar issue after a power outage. Should we be worried about the firmware?",
+        botFr: "Au fait, c'est la troisième unité qui présente un problème semblable après une coupure de courant. Faut-il s'inquiéter du micrologiciel ?",
         hints: ["I'd rather not speculate, but…", "Based on my experience…", "I would recommend escalating this to…"],
         branches: [
-          { keywords: ["firmware", "update", "version", "maybe", "recommend", "escalate", "engineer", "likely", "seems", "think", "could be"],
-            reply: "I'll pass this to your engineering team right away. Your caution is exactly what I'd expect from a pro.",
-            replyFr: "Je transmets immédiatement à votre équipe d'ingénieurs. Votre prudence est ce que j'attends d'une professionnelle.",
+          { keywords: ["firmware", "update", "version", "maybe", "recommend", "escalat", "engineer", "likely", "seems", "think", "could be", "might", "possib", "speculat", "experience", "look into", "investigat"],
+            reply: "That makes sense. I'll loop in our engineering team right away. I appreciate you not jumping to conclusions.",
+            replyFr: "C'est logique. Je mets tout de suite notre équipe d'ingénierie dans la boucle. J'apprécie que vous ne tiriez pas de conclusions hâtives.",
             next: "outro", praise: true },
         ],
-        fallback: "You may speculate cautiously: « It might be… I'd recommend… ».",
-        fallbackFr: "Spéculez prudemment : « C'est peut-être… Je recommanderais… ».",
+        fallback: "You can speculate, but cautiously. For example: it might be the firmware, and I'd recommend escalating it.",
+        fallbackFr: "Vous pouvez émettre une hypothèse, mais prudemment. Par exemple : il se peut que ce soit le micrologiciel, et je recommanderais de faire remonter le problème.",
         next: "n3"
       },
       outro: {
@@ -413,45 +413,45 @@ const SCENARIOS = [
         hints: ["Sure. The figure comes from…", "It's based on a worst-case scenario where…", "Let me break it down into three parts."],
         branches: [
           { keywords: ["based", "comes from", "derived", "worst case", "data", "test", "assumption", "analysis", "let me"],
-            reply: "Thank you — that's exactly the level of rigour I was hoping for. Next question.",
-            replyFr: "Merci — c'est précisément le niveau de rigueur que j'espérais. Question suivante.",
+            reply: "Thank you. That's exactly the level of rigor I was hoping for.",
+            replyFr: "Merci. C'est exactement le niveau de rigueur que j'espérais.",
             next: "n2", praise: true },
         ],
-        fallback: "Structurez la démonstration : « It's based on… , and then we factored in… ».",
-        fallbackFr: "Structurez la démonstration : « Cela repose sur… , puis nous avons intégré… ».",
+        fallback: "Structure your explanation: it's based on this data, and then we factored in that assumption.",
+        fallbackFr: "Structurez votre explication : cela repose sur telles données, puis nous avons intégré telle hypothèse.",
         next: "start"
       },
       n2: {
-        bot: "Follow-up: what would change your recommendation if the client insisted on a shorter lead time? Would the safety margin hold up?",
-        botFr: "Question complémentaire : si le client insistait sur un délai plus court, cela changerait-il votre recommandation ? La marge de sécurité tiendrait-elle ?",
+        bot: "A follow-up: if the client insisted on a shorter lead time, would the safety margin hold up?",
+        botFr: "Question complémentaire : si le client exigeait un délai plus court, la marge de sécurité tiendrait-elle ?",
         hints: ["That's a fair question. Off the top of my head…", "Honestly, I'd have to double-check, but…", "I'd be reluctant to commit without…"],
         branches: [
           { keywords: ["margin", "hold", "check", "double-check", "reluctant", "without", "candid", "fair", "honestly", "depending"],
-            reply: "Appreciate the honesty — \"I'd have to double-check\" is a perfectly professional answer. Let's move to a slightly different angle.",
-            replyFr: "Merci pour votre franchise — « Je dois vérifier » est une réponse parfaitement professionnelle. Passons à un autre angle.",
+            reply: "I appreciate the honesty. Saying you'd have to double-check is a perfectly professional answer.",
+            replyFr: "J'apprécie votre franchise. Dire qu'il faudrait revérifier est une réponse parfaitement professionnelle.",
             next: "n3", praise: true },
         ],
-        fallback: "It's perfectly fine not to know: « I'd have to double-check, but my initial thought is… ».",
-        fallbackFr: "Vous avez le droit de ne pas savoir : « Je dois vérifier, mais a priori… ».",
+        fallback: "It's perfectly fine not to know. For example: I'd have to double-check, but my initial thought is that the margin would hold.",
+        fallbackFr: "Il est tout à fait acceptable de ne pas savoir. Par exemple : il faudrait que je revérifie, mais ma première impression est que la marge tiendrait.",
         next: "n2"
       },
       n3: {
-        bot: "Last one, and it's a loaded one: what's the single biggest risk you'd flag in this project, and why?",
-        botFr: "Dernière question — et elle est piégée : quel serait le risque n°1 à signaler dans ce projet, et pourquoi ?",
-        hints: ["If I had to pick one, it would be…", "Off the record? The scope creep.", "The real risk isn't technical — it's…"],
+        bot: "Last one, and it's a tough one: what's the single biggest risk you'd flag in this project, and why?",
+        botFr: "Dernière question, et elle est difficile : quel est le plus grand risque que vous signaleriez dans ce projet, et pourquoi ?",
+        hints: ["If I had to pick one, it would be…", "Honestly? Scope creep.", "The real risk isn't technical — it's…"],
         branches: [
           { keywords: ["risk", "biggest", "would be", "scope", "because", "team", "timeline", "data", "candid", "honest"],
-            reply: "Perfectly articulated. That's a wrap — thanks for a sharp, structured Q&A.",
-            replyFr: "Parfaitement articulé. C'est terminé — merci pour un Q&A vif et structuré.",
+            reply: "Very clearly put. That's a wrap. Thank you for a sharp, structured Q and A.",
+            replyFr: "Très clairement formulé. Nous avons terminé. Merci pour cette séance de questions précise et structurée.",
             next: "outro", praise: true },
         ],
-        fallback: "Pick ONE risk and justify it: « If I had to pick one, it would be… because… ».",
-        fallbackFr: "Choisissez UN risque et justifiez-le : « Si j'en devais choisir un, ce serait… parce que… ».",
+        fallback: "Pick one risk and justify it. For example: if I had to pick one, it would be the timeline, because the test data is still incomplete.",
+        fallbackFr: "Choisissez un seul risque et justifiez-le. Par exemple : si je devais n'en retenir qu'un, ce serait le calendrier, car les données d'essai sont encore incomplètes.",
         next: "n3"
       },
       outro: {
-        bot: "Excellent. I've been in this industry fifteen years, and I rarely hear non-native presenters handle Q&A with this much precision. Well done.",
-        botFr: "Excellent. Je suis dans ce métier depuis quinze ans et j'entends rarement des non natifs gérer un Q&A avec autant de précision. Bien joué.",
+        bot: "Excellent. I've been in this industry for fifteen years, and I rarely hear a presenter handle questions with this much precision. Well done.",
+        botFr: "Excellent. Je travaille dans ce secteur depuis quinze ans, et j'entends rarement quelqu'un répondre aux questions avec autant de précision. Bravo.",
         hints: [], branches: [], next: null, end: true
       }
     }
@@ -463,29 +463,43 @@ const SCENARIOS = [
       start: {
         bot: "Packed in here, isn't it? I'm Mark, I work in industrial automation. Have you been to this conference before?",
         botFr: "Il fait bondissant ici, n'est-ce pas ? Je suis Mark, je travaille dans l'automatisation industrielle. Vous étiez déjà venue à ce salon ?",
-        hints: ["No, it's my first time here.", "Yes, I came two years ago — the keynote was excellent.", "I'm attending for the second time."],
+        hints: ["No, it's my first time here.", "Yes, I came two years ago. The keynote was excellent.", "I'm attending for the second time."],
         branches: [
           { keywords: ["first time", "before", "yes", "no", "year", "second", "time", "keynote", "attend"],
-            reply: "Then you're in for a treat — the robotics track this year is supposed to be excellent. And what do you do day to day?",
-            replyFr: "Vous serez gâtée — la piste robotique est réputée excellente cette année. Et vous faites quoi au quotidien ?",
-            next: "n2", praise: true },
+            reply: "Well, you're in for a treat. The robotics track this year is supposed to be excellent.",
+            replyFr: "Eh bien, vous allez vous régaler. Le parcours robotique de cette année est censé être excellent.",
+            next: "n1b", praise: true },
         ],
-        fallback: "Answer simply: « It's my first time here — and for you? » Then say what brings you here.",
-        fallbackFr: "Répondez simplement : « It's my first time here, and yours? » Puis dites ce qui vous amène.",
+        fallback: "Answer simply. For example: it's my first time here. How about you?",
+        fallbackFr: "Répondez simplement. Par exemple : c'est la première fois que je viens. Et vous ?",
         next: "start"
       },
+      n1b: {
+        bot: "So what do you do, day to day?",
+        botFr: "Et vous faites quoi, au quotidien ?",
+        hints: ["I'm a technical translator.", "I translate engineering documentation, mostly from English into French.", "I work freelance for industrial clients."],
+        branches: [
+          { keywords: ["translat", "technical", "document", "freelance", "work", "language", "localiz"],
+            reply: "A technical translator, how interesting!",
+            replyFr: "Traductrice technique, comme c'est intéressant !",
+            next: "n2", praise: true },
+        ],
+        fallback: "Just say what you do. For example: I'm a technical translator, and I work mostly for industrial clients.",
+        fallbackFr: "Dites simplement ce que vous faites. Par exemple : je suis traductrice technique et je travaille surtout pour des clients industriels.",
+        next: "n1b"
+      },
       n2: {
-        bot: "A translator! I've always been curious — how do you keep up with all the technical jargon? It changes so fast.",
-        botFr: "Traductrice ! J'ai toujours été curieux — comment faites-vous pour suivre tout le jargon technique ? Ça change si vite.",
+        bot: "I've always been curious: how do you keep up with all the jargon? It changes so fast.",
+        botFr: "J'ai toujours été curieux : comment faites-vous pour suivre tout ce jargon ? Il évolue si vite.",
         hints: ["I read a lot of specialized press…", "I keep a personal glossary of terms…", "I follow a few industry newsletters…"],
         branches: [
-          { keywords: ["glossary", "read", "newsletter", "jargon", "keep up", "follow", "specialized"],
-            reply: "A personal glossary — I love that. It's almost like a craft. Do you enjoy the puzzle side of it?",
-            replyFr: "Un glossaire personnel — j'adore. On dirait presque un artisanat. Aimez-vous l'aspect énigme du métier ?",
+          { keywords: ["glossary", "read", "newsletter", "jargon", "keep up", "follow", "specialized", "press", "colleague", "client", "ask", "research", "standard"],
+            reply: "I love that. It's almost like a craft.",
+            replyFr: "J'adore. C'est presque un artisanat.",
             next: "n3", praise: true },
         ],
-        fallback: "Describe your method: « I usually… , and I also… ».",
-        fallbackFr: "Décrivez votre méthode : « D'habitude… , et aussi… ».",
+        fallback: "Describe your method. For example: I usually read the trade press, and I also keep a personal glossary.",
+        fallbackFr: "Décrivez votre méthode. Par exemple : en général je lis la presse spécialisée, et je tiens aussi un glossaire personnel.",
         next: "n2"
       },
       n3: {
@@ -494,17 +508,17 @@ const SCENARIOS = [
         hints: ["That would be great.", "I'd be happy to. Shall I give you my card?", "Let's keep in touch — I'll send you a message on LinkedIn."],
         branches: [
           { keywords: ["yes", "happy", "great", "card", "contact", "keep in touch", "linkedin", "email"],
-            reply: "Excellent. Here's mine as well. Enjoy the rest of the conference — and do check out the robotics track, it's worth your time.",
-            replyFr: "Excellent. Voici le mien également. Profitez bien du salon — et regardez la piste robotique, elle vaut votre temps.",
+            reply: "Excellent. Here's mine as well. And do check out the robotics track, it's worth your time.",
+            replyFr: "Excellent. Voici la mienne aussi. Et allez voir le parcours robotique, il en vaut la peine.",
             next: "outro", praise: true },
         ],
-        fallback: "Accept simply and warmly: « With pleasure. » or « Sure, let's keep in touch. »",
-        fallbackFr: "Acceptez simplement et chaleureusement : « With pleasure. » ou « Sure, let's keep in touch. »",
+        fallback: "Accept simply and warmly. For example: I'd be happy to. Let's keep in touch.",
+        fallbackFr: "Acceptez simplement et chaleureusement. Par exemple : avec plaisir. Restons en contact.",
         next: "n3"
       },
       outro: {
-        bot: "See you around, and good luck with the rest of the day — this was a real pleasure!",
-        botFr: "À bientôt, et bonne fin de journée — ce fut un vrai plaisir !",
+        bot: "See you around, and enjoy the rest of the conference. This was a real pleasure!",
+        botFr: "À bientôt, et profitez bien de la suite de la conférence. Ce fut un vrai plaisir !",
         hints: [], branches: [], next: null, end: true
       }
     }
@@ -514,17 +528,17 @@ const SCENARIOS = [
     context: "Le client propose un tarif que vous jugez bas pour un dossier technique urgent. Objectif : défendre votre position avec calme et précision — défi C1/C2.",
     nodes: {
       start: {
-        bot: "We've reviewed your quote. For a hundred pages, our budget tops out at twenty-five cents a word. I know it's below your usual rate — can we find a middle ground?",
-        botFr: "Nous avons étudié votre devis. Pour cent pages, notre budget plafonne à 25 centimes du mot. Je sais que c'est en dessous de votre tarif habituel — peut-on trouver un terrain d'entente ?",
+        bot: "We've reviewed your quote. For a hundred pages, our budget tops out at twenty-five cents a word. I know that's below your usual rate. Can we find some middle ground?",
+        botFr: "Nous avons étudié votre devis. Pour cent pages, notre budget plafonne à vingt-cinq cents le mot. Je sais que c'est en dessous de votre tarif habituel. Pouvons-nous trouver un terrain d'entente ?",
         hints: ["I understand your constraint, but…", "At that rate, I wouldn't be able to allocate…", "Could you tell me more about the deadline?"],
         branches: [
           { keywords: ["understand", "rate", "price", "budget", "however", "but", "quality", "allocate", "time", "hours"],
-            reply: "I appreciate the frankness. Let's talk about what actually drives the cost, then.",
-            replyFr: "J'apprécie votre franchise. Parlons alors de ce qui fait réellement le coût.",
+            reply: "I appreciate your candor. Let's talk about what actually drives the cost, then.",
+            replyFr: "J'apprécie votre franchise. Parlons donc de ce qui détermine réellement le coût.",
             next: "n2", praise: true },
         ],
-        fallback: "Defend your position with this structure: « I understand… , however… , and I would suggest… ».",
-        fallbackFr: "Défendez votre position : « I understand… , however… , and I would suggest… ».",
+        fallback: "Defend your position with this structure: I understand your constraint; however, at that rate I couldn't guarantee the quality.",
+        fallbackFr: "Défendez votre position avec cette structure : je comprends votre contrainte ; cependant, à ce tarif, je ne pourrais pas garantir la qualité.",
         next: "start"
       },
       n2: {
@@ -533,12 +547,12 @@ const SCENARIOS = [
         hints: ["Mainly the deadline — a rush premium of…", "It's the engineering drawings — they require…", "Both volume and deadline play a role."],
         branches: [
           { keywords: ["deadline", "rush", "volume", "drawings", "technical", "time", "hours", "premium", "role"],
-            reply: "Understood. What if we gave you two extra weeks and reduced the volume to eighty pages — would that bring the rate down to thirty cents?",
-            replyFr: "Compris. Et si nous vous accordions deux semaines de plus et réduisions le volume à quatre-vingts pages — cela ramènerait-il le tarif à trente centimes ?",
+            reply: "Understood. What if we gave you two extra weeks and cut the volume to eighty pages? We could then go up to thirty cents a word.",
+            replyFr: "Compris. Et si nous vous donnions deux semaines de plus en ramenant le volume à quatre-vingts pages ? Nous pourrions alors monter à trente cents le mot.",
             next: "n3", praise: true },
         ],
-        fallback: "Name the main factor and justify it: « The main factor is… because… ».",
-        fallbackFr: "Nommez le facteur principal : « The main factor is… because… ».",
+        fallback: "Name the main factor and justify it. For example: the main factor is the deadline, because a rush job means working weekends.",
+        fallbackFr: "Nommez le facteur principal et justifiez-le. Par exemple : le facteur principal est le délai, car un travail en urgence implique de travailler le week-end.",
         next: "n2"
       },
       n3: {
@@ -547,22 +561,373 @@ const SCENARIOS = [
         hints: ["Thirty cents works for me.", "I can agree to those terms.", "Let's shake on it — I'll send the revised quote today."],
         branches: [
           { keywords: ["deal", "agree", "works", "acceptable", "shake", "yes", "term", "send", "quote"],
-            reply: "Excellent. I'll have the contract signed by both sides this afternoon. It's been a real pleasure doing business with you.",
-            replyFr: "Excellent. Je ferai signer le contrat par les deux parties cet après-midi. Ce fut un vrai plaisir de faire affaire avec vous.",
+            reply: "Excellent. I'll have the contract ready for signature this afternoon.",
+            replyFr: "Excellent. Le contrat sera prêt à être signé cet après-midi.",
             next: "outro", praise: true },
           { keywords: ["no", "still", "rather", "instead", "otherwise", "need"],
-            reply: "Fair enough. What would still need to move for you to say yes?",
-            replyFr: "C'est compréhensible. Qu'est-ce qui devrait encore bouger pour que vous disiez oui ?",
+            reply: "Fair enough. Let's go back over the terms, then.",
+            replyFr: "Très bien. Reprenons les conditions, alors.",
             next: "n2" },
         ],
-        fallback: "Accept clearly (« We have a deal. ») or counter politely (« We're close, but I'd need… »).",
-        fallbackFr: "Acceptez clairement (« We have a deal. »), ou contre-proposition polie (« We're close, but I'd need… »).",
+        fallback: "Accept clearly, for example: we have a deal. Or counter politely: we're close, but I'd need one more week.",
+        fallbackFr: "Acceptez clairement, par exemple : marché conclu. Ou faites une contre-proposition polie : nous sommes proches, mais il me faudrait une semaine de plus.",
         next: "n3"
       },
       outro: {
-        bot: "Thank you for the negotiation — firm, professional and courteous. That's exactly the kind of partner we like to work with.",
-        botFr: "Merci pour cette négociation — ferme, professionnelle et courtoise. C'est exactement le genre de partenaire avec qui nous aimons travailler.",
+        bot: "Thank you. You were firm, professional, and courteous. That's exactly the kind of partner we like to work with.",
+        botFr: "Merci. Vous avez été ferme, professionnelle et courtoise. C'est exactement le genre de partenaire avec qui nous aimons travailler.",
         hints: [], branches: [], next: null, end: true
+      }
+    }
+  },
+  {
+    "id": "query",
+    "icon": "❓",
+    "title": "Lever une ambiguïté avec un ingénieur",
+    "context": "Le texte source contient une phrase ambiguë. Vous appelez l'ingénieur qui l'a rédigée pour clarifier, sans lui faire perdre de temps.",
+    "nodes": {
+      "start": {
+        "bot": "Dave Miller, engineering. What can I do for you?",
+        "botFr": "Dave Miller, bureau d'études. Que puis-je faire pour vous ?",
+        "hints": [
+          "Hi Dave, I'm translating the maintenance manual for the pump unit.",
+          "I have a quick question about section four.",
+          "Do you have two minutes?"
+        ],
+        "branches": [
+          {
+            "keywords": [
+              "translat",
+              "manual",
+              "question",
+              "section",
+              "document",
+              "minute",
+              "quick",
+              "clarif"
+            ],
+            "reply": "Sure, I've got a few minutes. Go ahead.",
+            "replyFr": "Bien sûr, j'ai quelques minutes. Allez-y.",
+            "next": "n2",
+            "praise": true
+          }
+        ],
+        "fallback": "Say who you are and why you're calling. For example: I'm translating your manual, and I have a quick question about section four.",
+        "fallbackFr": "Dites qui vous êtes et pourquoi vous appelez. Par exemple : je traduis votre manuel et j'ai une petite question sur la section quatre.",
+        "next": "start"
+      },
+      "n2": {
+        "bot": "So, what's unclear?",
+        "botFr": "Alors, qu'est-ce qui n'est pas clair ?",
+        "hints": [
+          "The sentence says: replace the seal and the bearing if worn.",
+          "Does 'if worn' apply to both parts, or only to the bearing?",
+          "I want to make sure I understand it correctly."
+        ],
+        "branches": [
+          {
+            "keywords": [
+              "apply",
+              "both",
+              "only",
+              "mean",
+              "refer",
+              "sentence",
+              "understand",
+              "unclear",
+              "ambiguous",
+              "whether",
+              "or"
+            ],
+            "reply": "Good catch. It applies only to the bearing. The seal is always replaced.",
+            "replyFr": "Bien vu. Cela ne s'applique qu'au roulement. Le joint est toujours remplacé.",
+            "next": "n3",
+            "praise": true
+          }
+        ],
+        "fallback": "Quote the sentence, then ask a precise either-or question. For example: does it apply to both parts, or only to the bearing?",
+        "fallbackFr": "Citez la phrase, puis posez une question précise à deux options. Par exemple : cela s'applique-t-il aux deux pièces, ou seulement au roulement ?",
+        "next": "n2"
+      },
+      "n3": {
+        "bot": "Should I change the English, or will you just handle it in the translation?",
+        "botFr": "Dois-je modifier l'anglais, ou allez-vous simplement le traiter dans la traduction ?",
+        "hints": [
+          "I'd suggest rewording the source as well.",
+          "I'll make it explicit in the French, but it would help to fix the English too.",
+          "I'd recommend splitting it into two sentences."
+        ],
+        "branches": [
+          {
+            "keywords": [
+              "suggest",
+              "recommend",
+              "reword",
+              "rephras",
+              "fix",
+              "source",
+              "both",
+              "explicit",
+              "split",
+              "two sentences",
+              "clarif",
+              "update"
+            ],
+            "reply": "Makes sense. I'll update the source and send you the revised section today.",
+            "replyFr": "C'est logique. Je mets à jour la source et je vous envoie la section révisée aujourd'hui.",
+            "next": "outro",
+            "praise": true
+          }
+        ],
+        "fallback": "Make a recommendation. For example: I'd suggest rewording the source as well, so other languages don't run into the same problem.",
+        "fallbackFr": "Faites une recommandation. Par exemple : je suggérerais de reformuler aussi la source, pour que les autres langues ne rencontrent pas le même problème.",
+        "next": "n3"
+      },
+      "outro": {
+        "bot": "Thanks for flagging it. Most people would have just guessed. Talk soon.",
+        "botFr": "Merci de l'avoir signalé. La plupart des gens auraient simplement deviné. À bientôt.",
+        "hints": [],
+        "branches": [],
+        "next": null,
+        "end": true
+      }
+    }
+  },
+  {
+    "id": "scope",
+    "icon": "⏱",
+    "title": "Dire non à un délai raccourci",
+    "context": "En plein projet, la cheffe de projet vous demande de livrer plus tôt et d'ajouter des pages. Objectif : refuser l'impossible tout en proposant une solution.",
+    "nodes": {
+      "start": {
+        "bot": "Hi, it's Karen. Bad news: the client moved the launch up. We now need everything by Thursday instead of next Monday. Can you do it?",
+        "botFr": "Bonjour, c'est Karen. Mauvaise nouvelle : le client a avancé le lancement. Il nous faut tout pour jeudi au lieu de lundi prochain. Vous pouvez le faire ?",
+        "hints": [
+          "I'm afraid Thursday isn't realistic for the full document.",
+          "I can't commit to that without compromising quality.",
+          "Let me see what's feasible."
+        ],
+        "branches": [
+          {
+            "keywords": [
+              "afraid",
+              "realistic",
+              "can't",
+              "cannot",
+              "not possible",
+              "unable",
+              "quality",
+              "commit",
+              "feasible",
+              "tight",
+              "difficult",
+              "impossible",
+              "not in a position"
+            ],
+            "reply": "I was afraid you'd say that. I get it, though.",
+            "replyFr": "Je craignais que vous disiez cela. Mais je comprends.",
+            "next": "n2",
+            "praise": true
+          }
+        ],
+        "fallback": "Be honest but polite. For example: I'm afraid Thursday isn't realistic for the full document.",
+        "fallbackFr": "Soyez honnête mais polie. Par exemple : je crains que jeudi ne soit pas réaliste pour le document complet.",
+        "next": "start"
+      },
+      "n2": {
+        "bot": "So what can you do by Thursday?",
+        "botFr": "Alors, que pouvez-vous faire d'ici jeudi ?",
+        "hints": [
+          "I could deliver the first two chapters by Thursday and the rest on Monday.",
+          "What I can do is prioritize the safety sections.",
+          "If we split the delivery, I can have the critical parts ready."
+        ],
+        "branches": [
+          {
+            "keywords": [
+              "could",
+              "can",
+              "deliver",
+              "priorit",
+              "split",
+              "first",
+              "chapter",
+              "section",
+              "part",
+              "partial",
+              "rest",
+              "critical"
+            ],
+            "reply": "A partial delivery could work. The safety sections are what they need for the launch anyway.",
+            "replyFr": "Une livraison partielle pourrait convenir. De toute façon, ce sont les sections de sécurité qu'il leur faut pour le lancement.",
+            "next": "n3",
+            "praise": true
+          }
+        ],
+        "fallback": "Offer an alternative. For example: what I can do is deliver the safety sections by Thursday and the rest on Monday.",
+        "fallbackFr": "Proposez une alternative. Par exemple : ce que je peux faire, c'est livrer les sections de sécurité jeudi et le reste lundi.",
+        "next": "n2"
+      },
+      "n3": {
+        "bot": "One more thing. They've added ten pages of release notes. Could you squeeze those in at the same rate?",
+        "botFr": "Encore une chose. Ils ont ajouté dix pages de notes de version. Pourriez-vous les caser au même tarif ?",
+        "hints": [
+          "I can take them on, but a rush fee would apply.",
+          "That's outside the original scope, so I'd need to send a revised quote.",
+          "I'm happy to do it, but not by Thursday."
+        ],
+        "branches": [
+          {
+            "keywords": [
+              "rush",
+              "fee",
+              "scope",
+              "quote",
+              "additional",
+              "extra",
+              "rate",
+              "surcharge",
+              "revised",
+              "not by",
+              "after",
+              "happy to",
+              "separate"
+            ],
+            "reply": "That's fair. Send me the revised quote and I'll get it approved today.",
+            "replyFr": "C'est normal. Envoyez-moi le devis révisé et je le fais valider aujourd'hui.",
+            "next": "outro",
+            "praise": true
+          }
+        ],
+        "fallback": "Name the condition clearly. For example: that's outside the original scope, so I'd need to send a revised quote.",
+        "fallbackFr": "Énoncez clairement la condition. Par exemple : cela sort du périmètre initial, je devrai donc envoyer un devis révisé.",
+        "next": "n3"
+      },
+      "outro": {
+        "bot": "Thanks for being straight with me. I'd rather hear no now than get a late delivery on Thursday.",
+        "botFr": "Merci d'avoir été franche avec moi. Je préfère entendre non maintenant que recevoir une livraison en retard jeudi.",
+        "hints": [],
+        "branches": [],
+        "next": null,
+        "end": true
+      }
+    }
+  },
+  {
+    "id": "feedback",
+    "icon": "📝",
+    "title": "Répondre à une critique de votre traduction",
+    "context": "Le réviseur du client conteste plusieurs choix de traduction. Vous devez accepter ce qui est juste et défendre le reste, sans vous justifier à l'excès.",
+    "nodes": {
+      "start": {
+        "bot": "Thanks for joining. Our reviewer flagged quite a few changes in your translation, and honestly, we were a little surprised. Can you help us understand?",
+        "botFr": "Merci d'être là. Notre réviseur a signalé pas mal de modifications dans votre traduction et, honnêtement, nous avons été un peu surpris. Pouvez-vous nous aider à comprendre ?",
+        "hints": [
+          "Of course. I've gone through the reviewer's comments.",
+          "Thank you for sharing the feedback. I've looked at each change.",
+          "I'd be glad to walk you through them."
+        ],
+        "branches": [
+          {
+            "keywords": [
+              "of course",
+              "thank",
+              "feedback",
+              "comment",
+              "gone through",
+              "looked",
+              "review",
+              "walk",
+              "glad",
+              "happy",
+              "understand",
+              "certainly"
+            ],
+            "reply": "Good. We appreciate you taking it seriously.",
+            "replyFr": "Bien. Nous apprécions que vous le preniez au sérieux.",
+            "next": "n2",
+            "praise": true
+          }
+        ],
+        "fallback": "Start calmly and openly. For example: thank you for sharing the feedback. I've looked at each change.",
+        "fallbackFr": "Commencez calmement et avec ouverture. Par exemple : merci de m'avoir transmis ces remarques. J'ai examiné chaque modification.",
+        "next": "start"
+      },
+      "n2": {
+        "bot": "So, were these actual errors?",
+        "botFr": "Alors, s'agissait-il de vraies erreurs ?",
+        "hints": [
+          "Two of them were genuine mistakes on my part, and I've corrected them.",
+          "Most of the changes are preferential rather than errors.",
+          "A few are valid; the others are a matter of style."
+        ],
+        "branches": [
+          {
+            "keywords": [
+              "mistake",
+              "error",
+              "my part",
+              "corrected",
+              "preferential",
+              "preference",
+              "style",
+              "valid",
+              "genuine",
+              "most",
+              "matter of",
+              "agree"
+            ],
+            "reply": "I see. So some of it comes down to style. That's helpful to know.",
+            "replyFr": "Je vois. Donc une partie relève du style. C'est utile de le savoir.",
+            "next": "n3",
+            "praise": true
+          }
+        ],
+        "fallback": "Separate real errors from preferences. For example: two were genuine mistakes on my part; the rest are preferential changes.",
+        "fallbackFr": "Distinguez les vraies erreurs des préférences. Par exemple : deux étaient de vraies erreurs de ma part ; le reste relève de préférences.",
+        "next": "n2"
+      },
+      "n3": {
+        "bot": "How do we avoid this back-and-forth on the next project?",
+        "botFr": "Comment éviter ces allers-retours sur le prochain projet ?",
+        "hints": [
+          "I'd suggest we agree on a glossary and a style guide up front.",
+          "Could your reviewer and I have a short call before the next job?",
+          "If you share your preferred terminology, I'll apply it consistently."
+        ],
+        "branches": [
+          {
+            "keywords": [
+              "glossary",
+              "style guide",
+              "terminolog",
+              "call",
+              "agree",
+              "up front",
+              "beforehand",
+              "share",
+              "prefer",
+              "consisten",
+              "reference",
+              "align"
+            ],
+            "reply": "A shared glossary and a quick call. I like that. Let's set it up this week.",
+            "replyFr": "Un glossaire partagé et un appel rapide. Ça me plaît. Organisons cela cette semaine.",
+            "next": "outro",
+            "praise": true
+          }
+        ],
+        "fallback": "Propose something concrete. For example: I'd suggest we agree on a glossary and a style guide up front.",
+        "fallbackFr": "Proposez quelque chose de concret. Par exemple : je suggérerais de convenir d'un glossaire et d'un guide de style dès le départ.",
+        "next": "n3"
+      },
+      "outro": {
+        "bot": "I'm glad we talked. You owned what was yours and stood your ground on the rest. That's what we need.",
+        "botFr": "Je suis content que nous ayons parlé. Vous avez assumé ce qui vous revenait et tenu bon sur le reste. C'est ce qu'il nous faut.",
+        "hints": [],
+        "branches": [],
+        "next": null,
+        "end": true
       }
     }
   }
