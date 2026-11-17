@@ -11,7 +11,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Éloquence — Atelier d'anglais oral</title>
-<link rel="stylesheet" href="styles.css?v=13">
+<link rel="stylesheet" href="styles.css?v=14">
 </head>
 <body>
 <header>
@@ -127,7 +127,7 @@
         <div class="meters"><span id="dialogue-score">1 000</span> pts · <span id="dialogue-lives">❤ 3</span></div>
       </div>
       <div id="dialogue-log" class="chat-log"></div>
-      <div class="dialogue-input">
+      <div class="dialogue-input" id="dialogue-input">
         <button class="btn primary" id="btn-talk">🎙 Répondre à voix haute</button>
         <div class="or">ou</div>
         <input type="text" id="dlg-text" placeholder="Tapez votre réponse…">
@@ -136,6 +136,13 @@
         <button class="ghost small" id="btn-skip">Passer</button>
       </div>
       <div id="dlg-hints" class="hints hidden"></div>
+      <div id="dialogue-end" class="dialogue-end hidden">
+        <p><strong>Conversation terminée</strong> · <span id="dialogue-end-score"></span></p>
+        <div class="controls">
+          <button class="btn primary" id="btn-dlg-replay">↻ Rejouer ce scénario</button>
+          <button class="btn outline" id="btn-dlg-list">Choisir un autre scénario</button>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -224,11 +231,11 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="js/data.js?v=13"></script>
-<script src="js/phonemes.js?v=13"></script>
-<script src="js/phoneme.js?v=13"></script>
-<script src="js/audio-index.js?v=13"></script>
-<script src="js/app.js?v=13"></script>
+<script src="js/data.js?v=14"></script>
+<script src="js/phonemes.js?v=14"></script>
+<script src="js/phoneme.js?v=14"></script>
+<script src="js/audio-index.js?v=14"></script>
+<script src="js/app.js?v=14"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

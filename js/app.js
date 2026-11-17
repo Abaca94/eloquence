@@ -191,6 +191,10 @@ function speechDone() {
 }
 player.addEventListener("ended", speechDone);
 player.addEventListener("error", speechDone);
+// Garde-fou ajusté à la durée réelle de l'enregistrement.
+player.addEventListener("loadedmetadata", () => {
+  if (speakBusy && isFinite(player.duration)) { clearTimeout(speakWatch); speakWatch = setTimeout(speechDone, (player.duration / (player.playbackRate || 1)) * 1000 + 2500); }
+});
 function speakNext(text, rateOverride) {
   if (speakBusy) speakQueue.push([text, rateOverride]); else speakNow(text, rateOverride);
 }
@@ -208,7 +212,7 @@ function speakNow(text, rateOverride) {
   player.pause();
   speakBusy = true;
   // Garde-fou : si aucun signal de fin n'arrive, on débloque la file.
-  clearTimeout(speakWatch); speakWatch = setTimeout(speechDone, 30000);
+  clearTimeout(speakWatch); speakWatch = setTimeout(speechDone, 20000);
   const rate = rateOverride || parseFloat(store.rate) || 0.95;
   if (playRecorded(text, rate, !!rateOverride && rateOverride < 0.9)) return;
   speakSystem(text, rate);
@@ -583,7 +587,7 @@ function finishAttempt(heard, alternatives) {
 /* ============================================================
    MODULE TÊTE-À-TÊTE (agent local)
    ============================================================ */
-let scenario = null, scNode = null, dlgXP = 0, dlgLives = 3;
+let scenario = null, scNode = null, dlgXP = 0, dlgLives = 3, scenarioEnded = false;
 function renderScenarios() {
   const box = $("#scenario-list");
   box.innerHTML = "";
@@ -610,7 +614,11 @@ function bubble(cls, textEN, textFR, meta) {
 }
 function startScenario(s) {
   stopSpeaking();
+  talkCancel();
+  scenarioEnded = false;
   $("#dlg-text").disabled = false;
+  $("#dialogue-input").classList.remove("hidden");
+  $("#dialogue-end").classList.add("hidden");
   scenario = s; dlgXP = 0; dlgLives = 3;
   scNode = s.nodes.start;
   $("#dialogue-select").classList.add("hidden");
@@ -632,13 +640,18 @@ function updateMeters() {
 function endScenario() {
   if (!store.scenariosDone.includes(scenario.id)) store.scenariosDone.push(scenario.id);
   save();
-  bubble("bubble-agent", "— End of this conversation.", "Fin de la conversation · total de la séance : " + dlgXP + " points ⭐. Rejouez-la ou ouvrez une autre situation.");
-  // On laisse la conversation affichée pour la relire ; « Quitter » ramène à la liste.
+  scenarioEnded = true;
+  talkCancel();
+  // La conversation reste affichée pour la relire ; deux boutons clairs pour la suite.
+  $("#dialogue-input").classList.add("hidden");
+  $("#dlg-hints").classList.add("hidden");
+  $("#dialogue-end-score").textContent = dlgXP + " points ⭐ gagnés";
+  $("#dialogue-end").classList.remove("hidden");
   $("#dlg-text").disabled = true;
   renderHUD();
 }
 function answerDialogUED(transcript) {
-  if (!transcript.trim()) return;
+  if (scenarioEnded || !transcript.trim()) return;
   bubble("bubble-user", transcript);
   const text = normalize(transcript);
   // Mots courts : mot entier ; mots longs : début de mot (« translat » reconnaît « translated »).
@@ -690,6 +703,7 @@ function talkStartRec() {
   r.lang = "en-US"; r.continuous = true; r.interimResults = true; r.maxAlternatives = 1;
   let finals = "", interim = "";
   r.onresult = (ev) => {
+    if (!talk || talk.rec !== r) return;
     finals = ""; interim = "";
     for (let i = 0; i < ev.results.length; i++) {
       if (ev.results[i].isFinal) finals += ev.results[i][0].transcript + " "; else interim += ev.results[i][0].transcript;
@@ -697,16 +711,28 @@ function talkStartRec() {
     talk.current = (finals + interim).trim();
     $("#dlg-text").value = (talk.done + " " + talk.current).trim();
   };
-  r.onerror = (ev) => { if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { talk.stopping = true; micWarning("Micro refusé : autorisez-le dans les réglages du navigateur."); } };
+  r.onerror = (ev) => { if (!talk) return; if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { talk.stopping = true; micWarning("Micro refusé : autorisez-le dans les réglages du navigateur."); } };
   r.onend = () => {
-    if (!talk) return;
+    if (!talk || talk.rec !== r) return;
     talk.done = (talk.done + " " + talk.current).trim(); talk.current = "";
     if (talk.stopping) return talkFinish();
-    // Pause détectée par le navigateur : on relance, sans envoyer.
-    try { talk.rec = talkStartRec(); } catch (e) { talkFinish(); }
+    // Pause détectée par le navigateur : on relance, sans envoyer. Au-delà de
+    // 2 minutes ou de 40 relances, on envoie ce qui a été dit plutôt que de boucler.
+    talk.restarts = (talk.restarts || 0) + 1;
+    if (talk.restarts > 40 || Date.now() - talk.since > 120000) return talkFinish();
+    const t = talk;
+    t.timer = setTimeout(() => { if (talk !== t) return; try { t.rec = talkStartRec(); } catch (e) { talkFinish(); } }, 250);
   };
+  if (talk) talk.rec = r;
   r.start();
   return r;
+}
+function talkCancel() {
+  if (!talk) return;
+  const t = talk; talk = null; listening = false; talkButton(false);
+  t.stopping = true; clearTimeout(t.timer);
+  try { t.rec.abort ? t.rec.abort() : t.rec.stop(); } catch (e) {}
+  $("#dlg-text").value = "";
 }
 function talkFinish() {
   const text = talk ? talk.done : "";
@@ -719,7 +745,7 @@ $("#btn-talk").addEventListener("click", () => {
   if (talk) { talk.stopping = true; try { talk.rec.stop(); } catch (e) { talkFinish(); } return; }
   micWarning(null);
   stopSpeaking();   // l'interlocuteur se tait pendant que vous parlez
-  talk = { done: "", current: "", stopping: false, rec: null };
+  talk = { done: "", current: "", stopping: false, rec: null, restarts: 0, since: Date.now(), timer: null };
   try { talk.rec = talkStartRec(); } catch (e) { talk = null; return; }
   listening = true; talkButton(true);
 });
@@ -740,6 +766,7 @@ $("#btn-hint").addEventListener("click", () => {
   } else box.classList.add("hidden");
 });
 $("#btn-skip").addEventListener("click", () => {
+  if (scenarioEnded) return;
   const model = (scNode.hints && scNode.hints[0]) || "(voir les indices)";
   bubble("bubble-user", "— je passe (modèle : " + model + ")");
   dlgXP += 3;
@@ -758,9 +785,11 @@ $("#btn-skip").addEventListener("click", () => {
   setTimeout(showBotNode, 300);
   function stopSkipHere() { addXP(3); }
 });
+$("#btn-dlg-replay").addEventListener("click", () => startScenario(scenario));
+$("#btn-dlg-list").addEventListener("click", () => $("#btn-dialogue-exit").click());
 $("#btn-dialogue-exit").addEventListener("click", () => {
   $("#dialogue-run").classList.add("hidden");
-  if (talk) { talk.done = ""; talk.current = ""; talk.stopping = true; const t = talk; talk = null; listening = false; talkButton(false); try { t.rec.stop(); } catch (e) {} }
+  talkCancel();
   $("#dialogue-select").classList.remove("hidden");
   stopSpeaking();
   $("#dlg-text").disabled = false;

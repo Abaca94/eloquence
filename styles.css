@@ -281,3 +281,7 @@ button { touch-action: manipulation; }
 .review-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
 .review-actions .btn { padding: .5rem 1rem; }
 .chip-filter.review { border-color: var(--accent); color: var(--accent); }
+
+/* ---------- Fin de conversation ---------- */
+.dialogue-end { margin-top: 1rem; padding: 1rem 1.2rem; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--card); }
+.dialogue-end .controls { margin-top: .6rem; }
