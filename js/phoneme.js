@@ -292,10 +292,12 @@
     let ctx = null, stream = null, node = null, src = null, chunks = [], rate = 48000;
     return {
       start() {
+        root.__micOn = true;
+        try { if (navigator.audioSession) navigator.audioSession.type = "play-and-record"; } catch (e) {}
         // Contexte audio créé tout de suite, dans le geste de l'utilisateur (exigence d'iOS).
         ctx = new (root.AudioContext || root.webkitAudioContext)();
         const resumed = ctx.state === "suspended" ? ctx.resume() : Promise.resolve();
-        return this._open(resumed);
+        return this._open(resumed).catch((e) => { root.__micOn = false; throw e; });
       },
       async _open(resumed) {
         stream = await navigator.mediaDevices.getUserMedia({ audio: { channelCount: 1, echoCancellation: true, noiseSuppression: false, autoGainControl: true } });
@@ -312,6 +314,8 @@
         const n = chunks.reduce((a, c) => a + c.length, 0), all = new Float32Array(n);
         let o = 0; chunks.forEach(c => { all.set(c, o); o += c.length; });
         try { ctx && ctx.close(); } catch (e) {}
+        root.__micOn = false;
+        try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
         if (n < rate * 0.3) return null;
         return resample(all, rate, 16000);
       }

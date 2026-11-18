@@ -1,11 +1,11 @@
 /* Éloquence — service worker : l'app fonctionne hors ligne une fois ouverte.
    Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement. */
-const VERSION = "eloquence-v19";
+const VERSION = "eloquence-v20";
 /* Caches durables, gardés entre les versions : modèle de phonèmes (js/phoneme.js), moteurs onnxruntime
    et Harper, enregistrements, voix du coach (js/coach.js) et données du coach (dictionnaire, WordNet).
    Changez COACH_DATA si coach/lex.json ou coach/sense/ changent. */
 const COACH_DATA = "eloquence-coach-v1";
-const KEEP = ["eloquence-model-v1", "eloquence-runtime-v1", "eloquence-audio-v1", "eloquence-voice-v1", COACH_DATA];
+const KEEP = ["eloquence-model-v1", "eloquence-runtime-v1", "eloquence-audio-v2", "eloquence-voice-v1", COACH_DATA];
 const RUNTIME_PREFIXES = ["https://cdn.jsdelivr.net/npm/onnxruntime-web@", "https://cdn.jsdelivr.net/npm/harper.js@"];
 const FILES = [
   "./", "index.html", "styles.css", "js/app.js", "js/data.js", "js/phonemes.js", "js/phoneme.js", "js/audio-index.js", "js/modes.js", "js/coach-data.js", "js/coach.js", "js/critique.js",
@@ -38,7 +38,7 @@ self.addEventListener("fetch", (e) => {
   }
   /* Enregistrements audio (noms de fichiers uniques par texte) : cache d'abord, gardés entre les versions. */
   if (new URL(e.request.url).pathname.includes("/audio/")) {
-    e.respondWith(caches.open("eloquence-audio-v1").then((c) => c.match(e.request).then((hit) => hit ||
+    e.respondWith(caches.open("eloquence-audio-v2").then((c) => c.match(e.request).then((hit) => hit ||
       fetch(e.request).then((res) => { if (res.ok) c.put(e.request, res.clone()); return res; }))));
     return;
   }

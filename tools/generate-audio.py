@@ -16,6 +16,6 @@ for voice in ["af_heart","am_michael"]:
         s,sr=k.create(t["text"],voice=voice,speed=0.72 if t["slow"] else 0.95,lang="en-us")
         sf.write("/tmp/claude-0/tmp.wav",s,sr) if os.path.isdir("/tmp/claude-0") else sf.write("tmp.wav",s,sr)
         src="/tmp/claude-0/tmp.wav" if os.path.isdir("/tmp/claude-0") else "tmp.wav"
-        subprocess.run(["ffmpeg","-y","-loglevel","error","-i",src,"-ac","1","-b:a","48k",mp3],check=True)
+        subprocess.run(["ffmpeg","-y","-loglevel","error","-i",src,"-af","loudnorm=I=-16:TP=-1.5:LRA=11","-ar","24000","-ac","1","-b:a","48k",mp3],check=True)
 json.dump(idx,open("idx.json","w"))
 print(len(idx))

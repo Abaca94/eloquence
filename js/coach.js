@@ -150,7 +150,8 @@ const Coach = (function () {
   function playPCM(a, rate) {
     const c = unlock();
     try { src && src.stop(); } catch (e) {}
-    const b = c.createBuffer(1, a.length, rate); b.getChannelData(0).set(a);
+    audioMode("playback");
+    const b = c.createBuffer(1, a.length, rate); b.getChannelData(0).set(louder(a));
     src = c.createBufferSource(); src.buffer = b; src.connect(c.destination); src.start();
     return new Promise(ok => { src.onended = ok; });
   }
@@ -357,7 +358,7 @@ const Coach = (function () {
         '<br><span class="muted">Pour une note son par son, installez l\'analyse son par son (Prononciation › Répéter).</span>';
     }, () => { recState = null; btn.textContent = label; btn.classList.remove("recording"); });
     recState = { btn, stop: () => { try { r.stop(); } catch (e) {} } };
-    try { r.start(); } catch (e) { recState = null; btn.textContent = label; btn.classList.remove("recording"); }
+    try { audioMode("play-and-record"); r.start(); } catch (e) { recState = null; btn.textContent = label; btn.classList.remove("recording"); }
   }
   function noteAttempt(score) {
     const m = mine()[cur.key];
@@ -375,7 +376,7 @@ const Coach = (function () {
       <div class="words">${r.words.map(w => `<span class="w-chip">${w.sounds.map(s => `<span class="snd-${s.level}" title="${esc(s.label || "")}">${esc(s.exp)}</span>`).join("")}</span>`).join(" ")}</div>
       ${issues.length ? `<ul class="fine-issues">${issues.slice(0, 4).map(i => `<li class="${i.s.level}"><strong>${esc(i.w)}</strong> · ${esc(i.s.label)}<br><span>${esc(i.s.tip)}</span></li>`).join("")}</ul>` : '<div class="heard">Aucun son problématique détecté.</div>'}
       <div class="controls"><button class="ghost small c-me">▶ Ma voix</button><button class="ghost small c-cmp">⇄ Modèle puis moi</button></div>`;
-    const playMe = () => { const c = unlock(); const b = c.createBuffer(1, audio.length, 16000); b.getChannelData(0).set(audio); const s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(); return new Promise(ok => { s.onended = ok; }); };
+    const playMe = () => { audioMode("playback"); const c = unlock(); const b = c.createBuffer(1, audio.length, 16000); b.getChannelData(0).set(louder(audio)); const s = c.createBufferSource(); s.buffer = b; s.connect(c.destination); s.start(); return new Promise(ok => { s.onended = ok; }); };
     out.querySelector(".c-me").onclick = playMe;
     out.querySelector(".c-cmp").onclick = async () => { await say(text, false); playMe(); };
   }

@@ -153,7 +153,8 @@ async function playShadow(withModel) {
   stopSpeaking();
   try { shadowCtx && shadowCtx.close(); } catch (e) {}
   const ctx = shadowCtx = new (window.AudioContext || window.webkitAudioContext)();
-  const me = ctx.createBuffer(1, shadowTake.audio.length, 16000); me.getChannelData(0).set(shadowTake.audio);
+  audioMode("playback");
+  const me = ctx.createBuffer(1, shadowTake.audio.length, 16000); me.getChannelData(0).set(louder(shadowTake.audio));
   const t0 = ctx.currentTime + 0.1;
   const s1 = ctx.createBufferSource(); s1.buffer = me; s1.connect(ctx.destination); s1.start(t0);
   if (withModel) {

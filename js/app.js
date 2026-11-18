@@ -166,6 +166,25 @@ function naturalVoice() {
   const v = store.naturalVoice === undefined ? "af_heart" : store.naturalVoice;
   return NATURAL_VOICES[v] ? v : null;
 }
+/* iPhone/iPad : après usage du micro, iOS envoie le son vers l'écouteur (très bas).
+   On repasse explicitement en mode « lecture » avant de jouer, et en mode
+   « lecture et enregistrement » avant d'écouter (Safari 17+). */
+function audioMode(kind) {
+  // Micro ouvert (shadowing, enregistrement) : on ne coupe pas la capture.
+  if (kind === "playback" && (window.__micOn || (typeof listening !== "undefined" && listening))) return;
+  try { if (navigator.audioSession) navigator.audioSession.type = kind; } catch (e) {}
+}
+/* Volume homogène pour l'audio produit dans l'app (voix du coach, votre enregistrement). */
+function louder(a) {
+  let peak = 0, sum = 0;
+  for (let i = 0; i < a.length; i++) { const v = Math.abs(a[i]); if (v > peak) peak = v; sum += a[i] * a[i]; }
+  const rms = Math.sqrt(sum / Math.max(1, a.length));
+  if (!peak || !rms) return a;
+  const g = Math.min(0.16 / rms, 0.97 / peak, 20);
+  const out = new Float32Array(a.length);
+  for (let i = 0; i < a.length; i++) out[i] = a[i] * g;
+  return out;
+}
 function playRecorded(text, rate, slowWanted) {
   const nv = naturalVoice();
   if (!nv || typeof AUDIO_INDEX === "undefined") return false;
@@ -210,6 +229,7 @@ function speakNow(text, rateOverride) {
   speechSynthesis.cancel();
   clearTimeout(speakTimer);
   player.pause();
+  audioMode("playback");
   speakBusy = true;
   // Garde-fou : si aucun signal de fin n'arrive, on débloque la file.
   clearTimeout(speakWatch); speakWatch = setTimeout(speechDone, 20000);
@@ -425,7 +445,7 @@ function startRecording() {
     }
   );
   if (!rec) return;
-  try { rec.start(); listening = true; } catch (e) { return; }
+  try { audioMode("play-and-record"); rec.start(); listening = true; } catch (e) { return; }
   const btn = $("#btn-record");
   btn.classList.add("recording");
   btn.textContent = REC_ON;
@@ -503,8 +523,9 @@ async function stopFineRecording() {
 }
 function playLastAudio() {
   if (!lastAudio) return;
+  audioMode("playback");
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
-  const b = ctx.createBuffer(1, lastAudio.length, 16000); b.getChannelData(0).set(lastAudio);
+  const b = ctx.createBuffer(1, lastAudio.length, 16000); b.getChannelData(0).set(louder(lastAudio));
   const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.onended = () => ctx.close(); s.start();
 }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
@@ -758,7 +779,7 @@ function talkStartRec() {
     t.timer = setTimeout(() => { if (talk !== t) return; try { t.rec = talkStartRec(); } catch (e) { talkFinish(); } }, 250);
   };
   if (talk) talk.rec = r;
-  r.start();
+  audioMode("play-and-record"); r.start();
   return r;
 }
 function talkCancel() {
