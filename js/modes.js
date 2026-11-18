@@ -191,6 +191,13 @@ function buildSession() {
   take(any, 1).forEach(p => steps.push({ kind: "shadow", phrase: p, label: "👥 Shadowing" }));
   const dn = dueNuances(), nu = dn.concat(pick(NUANCES.filter(n => !dn.includes(n)), 4)).slice(0, 4);
   nu.forEach(n => steps.push({ kind: "nuance", item: n, label: dn.includes(n) ? "🔁 Révision · nuance" : "⚖️ Nuance" }));
+  // Un mot difficile du coach (en priorité ceux à revoir aujourd'hui).
+  const cw = Object.keys(store.coachWords || {});
+  if (cw.length) {
+    const dueW = reviewDue("c:").filter(w => cw.includes(w));
+    const w = dueW.length ? pick(dueW, 1)[0] : pick(cw, 1)[0];
+    steps.splice(Math.min(3, steps.length), 0, { kind: "coach", word: w, label: (dueW.includes(w) ? "🔁 " : "🎯 ") + "Coach · « " + w + " »" });
+  }
   return steps;
 }
 function startSession() {
@@ -208,7 +215,9 @@ function runSessionStep() {
   $("#session-what").textContent = st.label;
   $("#session-fill").style.width = Math.round(100 * session.i / session.steps.length) + "%";
   $("#session-next").textContent = session.i + 1 < session.steps.length ? "Étape suivante →" : "Terminer ✓";
-  if (st.kind === "nuance") {
+  if (st.kind === "coach") {
+    openCoachWord(st.word, "pron");
+  } else if (st.kind === "nuance") {
     showTab("nuance");
     nuanceQueue = [st.item]; nuancePos = 0; showNuanceItem();
     $("#nuance-next").classList.add("session-hide");

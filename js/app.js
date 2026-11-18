@@ -634,6 +634,7 @@ function startScenario(s) {
   $("#dialogue-input").classList.remove("hidden");
   $("#dialogue-end").classList.add("hidden");
   scenario = s; dlgXP = 0; dlgLives = 3;
+  if (typeof Critique !== "undefined") { Critique.reset(); Critique.loadHarper().catch(() => {}); Coach.loadLex().catch(() => {}); }
   scNode = s.nodes.start;
   $("#dialogue-select").classList.add("hidden");
   $("#dialogue-run").classList.remove("hidden");
@@ -660,18 +661,30 @@ function endScenario() {
   $("#dialogue-input").classList.add("hidden");
   $("#dlg-hints").classList.add("hidden");
   $("#dialogue-end-score").textContent = dlgXP + " points ⭐ gagnés";
+  const sm = $("#dlg-summary");
+  if (sm && typeof Critique !== "undefined") {
+    sm.innerHTML = Critique.summaryHTML();
+    sm.querySelectorAll(".crit-coach").forEach(b => b.addEventListener("click", () => openCoachWord(b.dataset.w)));
+  }
   $("#dialogue-end").classList.remove("hidden");
   $("#dlg-text").disabled = true;
   renderHUD();
 }
-function answerDialogUED(transcript) {
+function answerDialogUED(transcript, opts) {
   if (scenarioEnded || !transcript.trim()) return;
+  opts = opts || {};
   bubble("bubble-user", transcript);
   const text = normalize(transcript);
   // Mots courts : mot entier ; mots longs : début de mot (« translat » reconnaît « translated »).
   const padded = " " + text + " ";
   const hit = (k) => { const n = normalize(k); return n.length <= 3 ? padded.includes(" " + n + " ") : padded.includes(" " + n); };
   const match = (scNode.branches || []).find(b => b.keywords.some(hit));
+  // Retour détaillé (sens, formulation, grammaire, prononciation), juste sous votre réplique.
+  if (typeof Critique !== "undefined" && store.dlgCritique !== false) {
+    const box = document.createElement("div"); box.className = "critique-box";
+    $("#dialogue-log").appendChild(box);
+    Critique.review({ text: transcript, spoken: !!opts.spoken, audioP: opts.audioP || null, node: scNode, match }, box);
+  }
   if (match) {
     const gain = 15 + (match.praise ? 5 : 0);
     dlgXP += gain;
@@ -725,7 +738,14 @@ function talkStartRec() {
     talk.current = (finals + interim).trim();
     $("#dlg-text").value = (talk.done + " " + talk.current).trim();
   };
-  r.onerror = (ev) => { if (!talk) return; if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { talk.stopping = true; micWarning("Micro refusé : autorisez-le dans les réglages du navigateur."); } };
+  r.onerror = (ev) => { if (!talk) return;
+    if (ev.error === "audio-capture" && talk.recorder) {
+      // Micro partagé refusé par le navigateur : on renonce à l'analyse pendant les dialogues sur cet appareil.
+      store.dlgDiction = false; save(); talk.recStart.then(() => talk.recorder && talk.recorder.stop()).catch(() => {}); talk.recorder = null;
+      toast("Ce navigateur ne permet pas d'analyser la prononciation pendant la reconnaissance : analyse désactivée en dialogue.");
+      return;
+    }
+    if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { talk.stopping = true; micWarning("Micro refusé : autorisez-le dans les réglages du navigateur."); } };
   r.onend = () => {
     if (!talk || talk.rec !== r) return;
     talk.done = (talk.done + " " + talk.current).trim(); talk.current = "";
@@ -746,20 +766,27 @@ function talkCancel() {
   const t = talk; talk = null; listening = false; talkButton(false);
   t.stopping = true; clearTimeout(t.timer);
   try { t.rec.abort ? t.rec.abort() : t.rec.stop(); } catch (e) {}
+  if (t.recorder) t.recStart.then(() => t.recorder.stop()).catch(() => {});
   $("#dlg-text").value = "";
 }
 function talkFinish() {
-  const text = talk ? talk.done : "";
+  const t = talk, text = t ? t.done : "";
   talk = null; listening = false; talkButton(false);
   $("#dlg-text").value = "";
-  if (text) answerDialogUED(text); else toast("Je n'ai rien entendu : réessayez ou écrivez votre réponse.");
+  const audioP = t && t.recorder ? t.recStart.then(() => t.recorder.stop()).catch(() => null) : null;
+  if (text) answerDialogUED(text, { spoken: true, audioP }); else toast("Je n'ai rien entendu : réessayez ou écrivez votre réponse.");
 }
 $("#btn-talk").addEventListener("click", () => {
   if (!ensureRecognitionUI()) return;
   if (talk) { talk.stopping = true; try { talk.rec.stop(); } catch (e) { talkFinish(); } return; }
   micWarning(null);
   stopSpeaking();   // l'interlocuteur se tait pendant que vous parlez
-  talk = { done: "", current: "", stopping: false, rec: null, restarts: 0, since: Date.now(), timer: null };
+  talk = { done: "", current: "", stopping: false, rec: null, restarts: 0, since: Date.now(), timer: null, recorder: null, recStart: null };
+  // Enregistrement en parallèle pour l'analyse son par son de votre réplique (si le modèle est installé).
+  if (fineDownloaded && store.fineMode !== false && store.dlgDiction !== false) {
+    try { Phoneme.load().catch(() => {}); talk.recorder = Phoneme.createRecorder(); talk.recStart = talk.recorder.start(); talk.recStart.catch(() => {}); }
+    catch (e) { talk.recorder = null; }
+  }
   try { talk.rec = talkStartRec(); } catch (e) { talk = null; return; }
   listening = true; talkButton(true);
 });
@@ -1010,6 +1037,10 @@ $("#set-rate").addEventListener("input", (e) => {
 });
 $("#set-theme").value = store.theme || "auto";
 $("#set-theme").addEventListener("change", (e) => { store.theme = e.target.value; save(); applyTheme(); });
+$("#set-critique").checked = store.dlgCritique !== false;
+$("#set-diction").checked = store.dlgDiction !== false;
+$("#set-critique").addEventListener("change", (e) => { store.dlgCritique = e.target.checked; save(); });
+$("#set-diction").addEventListener("change", (e) => { store.dlgDiction = e.target.checked; save(); });
 $("#set-goal").addEventListener("input", (e) => { store.goal = parseInt(e.target.value, 10) || 3; save(); renderDashboard(); });
 
 /* ---------- Démarrage ---------- */

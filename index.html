@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Éloquence — Atelier d'anglais oral</title>
-<link rel="stylesheet" href="styles.css?v=18b">
+<link rel="stylesheet" href="styles.css?v=19">
 </head>
 <body>
 <header>
@@ -35,6 +35,7 @@
   <button class="tab active" data-tab="dashboard"><span class="tab-ico">🏠</span><span class="tab-lbl">Accueil</span></button>
   <button class="tab" data-tab="pronunciation"><span class="tab-ico">🎙</span><span class="tab-lbl"><span class="lbl-long">Prononciation</span><span class="lbl-short">Prononcer</span></span></button>
   <button class="tab" data-tab="dialogue"><span class="tab-ico">💬</span><span class="tab-lbl"><span class="lbl-long">Conversation</span><span class="lbl-short">Dialogues</span></span></button>
+  <button class="tab" data-tab="coach"><span class="tab-ico">🎯</span><span class="tab-lbl">Coach</span></button>
   <button class="tab" data-tab="nuance"><span class="tab-ico">⚖️</span><span class="tab-lbl">Nuances</span></button>
   <button class="tab" data-tab="progress"><span class="tab-ico">📈</span><span class="tab-lbl">Progrès</span></button>
 </nav>
@@ -75,6 +76,12 @@
         <h3>Tête-à-tête</h3>
         <p>Conversations professionnelles avec un agent conversationnel : réunions, appels clients, négociations.</p>
         <span class="cta">Converser →</span>
+      </div>
+      <div class="card" data-open="coach">
+        <div class="card-ico">🎯</div>
+        <h3>Coach</h3>
+        <p>Un mot qui vous résiste ? Tapez-le : conseils de prononciation, paires minimales, sens, faux amis et exercices.</p>
+        <span class="cta">Travailler un mot →</span>
       </div>
       <div class="card" data-open="nuance">
         <div class="card-ico">⚖️</div>
@@ -162,12 +169,30 @@
       <div id="dlg-hints" class="hints hidden"></div>
       <div id="dialogue-end" class="dialogue-end hidden">
         <p><strong>Conversation terminée</strong> · <span id="dialogue-end-score"></span></p>
+        <div id="dlg-summary"></div>
         <div class="controls">
           <button class="btn primary" id="btn-dlg-replay">↻ Rejouer ce scénario</button>
           <button class="btn outline" id="btn-dlg-list">Choisir un autre scénario</button>
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- ============ COACH ============ -->
+  <section id="tab-coach" class="panel">
+    <h2>Coach</h2>
+    <p class="hint">Tapez un mot ou une courte expression qui vous pose problème : prononciation détaillée, exercices ciblés, sens et pièges.</p>
+    <form id="coach-form" class="coach-form">
+      <input type="text" id="coach-input" placeholder="ex. thorough, schedule, eventually…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search">
+      <button class="btn primary" type="submit">Analyser</button>
+    </form>
+    <div class="coach-voice hidden" id="coach-voice">
+      <span>🔊 <strong>Voix du coach</strong> : installez la voix naturelle Heart pour écouter n'importe quel mot (92 Mo, une seule fois par appareil). En attendant, la voix du système prend le relais.</span>
+      <button class="btn outline" id="coach-voice-dl">Installer la voix (92 Mo)</button>
+      <div class="goal-bar hidden" id="coach-voice-bar"><div></div></div>
+    </div>
+    <div id="coach-mine" class="coach-mine"></div>
+    <div id="coach-view" class="hidden"></div>
   </section>
 
   <!-- ============ NUANCE ============ -->
@@ -248,6 +273,14 @@
       <span class="muted" id="fine-status">Modèle non téléchargé.</span>
       <button class="btn outline hidden" id="fine-remove" type="button">Supprimer le modèle (240 Mo)</button>
     </div>
+    <label>Voix du coach</label>
+    <div class="voice-row">
+      <span class="muted" id="coach-voice-status">Voix du coach non installée.</span>
+      <button class="btn outline hidden" id="coach-voice-remove" type="button">Supprimer la voix (92 Mo)</button>
+    </div>
+    <label>Tête-à-tête</label>
+    <label class="check"><input type="checkbox" id="set-critique"> Retour détaillé après chaque réplique</label>
+    <label class="check"><input type="checkbox" id="set-diction"> Analyser ma prononciation pendant les dialogues</label>
     <label>Apparence</label>
     <select id="set-theme">
       <option value="auto">Automatique (comme l'appareil)</option>
@@ -264,12 +297,15 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="js/data.js?v=18b"></script>
-<script src="js/phonemes.js?v=18b"></script>
-<script src="js/phoneme.js?v=18b"></script>
-<script src="js/audio-index.js?v=18b"></script>
-<script src="js/app.js?v=18b"></script>
-<script src="js/modes.js?v=18b"></script>
+<script src="js/data.js?v=19"></script>
+<script src="js/phonemes.js?v=19"></script>
+<script src="js/phoneme.js?v=19"></script>
+<script src="js/audio-index.js?v=19"></script>
+<script src="js/app.js?v=19"></script>
+<script src="js/modes.js?v=19"></script>
+<script src="js/coach-data.js?v=19"></script>
+<script src="js/coach.js?v=19"></script>
+<script src="js/critique.js?v=19"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
