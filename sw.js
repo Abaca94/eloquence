@@ -1,6 +1,6 @@
 /* Éloquence — service worker : l'app fonctionne hors ligne une fois ouverte.
    Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement. */
-const VERSION = "eloquence-v15";
+const VERSION = "eloquence-v16";
 /* Caches durables, gardés entre les versions : modèle de phonèmes (js/phoneme.js) et moteur onnxruntime. */
 const KEEP = ["eloquence-model-v1", "eloquence-runtime-v1", "eloquence-audio-v1"];
 const RUNTIME_PREFIX = "https://cdn.jsdelivr.net/npm/onnxruntime-web@";

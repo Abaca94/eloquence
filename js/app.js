@@ -313,7 +313,18 @@ function renderHUD() {
   const li = levelInfo();
   $("#hud-xp").textContent = store.xp;
   $("#hud-streak").textContent = store.streak;
-  $("#hud-level").textContent = "Nv. " + (li.idx + 1) + " · " + li.level.name;
+  $("#hud-level").innerHTML = "Nv. " + (li.idx + 1) + '<span class="lvl-name"> · ' + li.level.name + "</span>";
+  $("#hud-level").parentElement.title = "Niveau " + (li.idx + 1) + " · " + li.level.name;
+}
+/* Écran tactile (iPhone, iPad) : pas de mention de la touche Espace. */
+const TOUCH = window.matchMedia && matchMedia("(hover: none) and (pointer: coarse)").matches;
+const REC_IDLE = TOUCH ? "🎙 Parler" : REC_IDLE;
+const REC_ON = TOUCH ? "🔴 À vous… touchez pour terminer" : REC_ON;
+function applyTheme() {
+  const t = store.theme || "auto";
+  if (t === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  const m = document.querySelector('meta[name="theme-color"]');
+  if (m) m.content = getComputedStyle(document.documentElement).getPropertyValue("--bg2").trim() || "#161a21";
 }
 
 /* ============================================================
@@ -399,7 +410,7 @@ function startRecording() {
     (err, errCode) => {
       listening = false;
       $("#btn-record").classList.remove("recording");
-      $("#btn-record").textContent = "🎙 Parler (ou touche Espace)";
+      $("#btn-record").textContent = REC_IDLE;
       if (err && errCode) {
         const hints = {
           "not-allowed": "L'accès au micro a été refusé. Autorisez le microphone (icône dans la barre d'adresse) puis réessayez.",
@@ -416,7 +427,7 @@ function startRecording() {
   try { rec.start(); listening = true; } catch (e) { return; }
   const btn = $("#btn-record");
   btn.classList.add("recording");
-  btn.textContent = "🔴 À vous… (cliquez ou relâchez Espace pour terminer)";
+  btn.textContent = REC_ON;
 }
 function stopRecording() {
   if (fineRec) return stopFineRecording();
@@ -460,8 +471,8 @@ function setRecordButton(state) {
   const btn = $("#btn-record");
   btn.classList.toggle("recording", state === "rec");
   btn.disabled = state === "busy";
-  btn.textContent = state === "rec" ? "🔴 À vous… (cliquez ou relâchez Espace pour terminer)"
-    : state === "busy" ? "⏳ Analyse son par son…" : "🎙 Parler (ou touche Espace)";
+  btn.textContent = state === "rec" ? REC_ON
+    : state === "busy" ? "⏳ Analyse son par son…" : REC_IDLE;
 }
 function startFineRecording() {
   if (fineRec || fineBusy) return;
@@ -545,7 +556,7 @@ function recordScore(score) {
 function finishAttempt(heard, alternatives) {
   listening = false;
   $("#btn-record").classList.remove("recording");
-  $("#btn-record").textContent = "🎙 Parler (ou touche Espace)";
+  $("#btn-record").textContent = REC_IDLE;
   const target = currentPhrase().en;
   const tWords = normalize(target).split(" ");
   const hWords = normalize(heard).split(" ");
@@ -947,9 +958,13 @@ $("#voice-auto").addEventListener("click", () => { store.voiceChosen = false; sa
 $("#set-rate").addEventListener("input", (e) => {
   store.rate = e.target.value; $("#rate-value").textContent = e.target.value; save();
 });
+$("#set-theme").value = store.theme || "auto";
+$("#set-theme").addEventListener("change", (e) => { store.theme = e.target.value; save(); applyTheme(); });
 $("#set-goal").addEventListener("input", (e) => { store.goal = parseInt(e.target.value, 10) || 3; save(); renderDashboard(); });
 
 /* ---------- Démarrage ---------- */
+applyTheme();
+$("#btn-record").textContent = REC_IDLE;
 renderHUD();
 renderDashboard();
 $("#review-pron").addEventListener("click", () => { showTab("pronunciation"); openReviewPhrases(); });
