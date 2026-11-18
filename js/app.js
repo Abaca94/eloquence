@@ -318,8 +318,8 @@ function renderHUD() {
 }
 /* Écran tactile (iPhone, iPad) : pas de mention de la touche Espace. */
 const TOUCH = window.matchMedia && matchMedia("(hover: none) and (pointer: coarse)").matches;
-const REC_IDLE = TOUCH ? "🎙 Parler" : REC_IDLE;
-const REC_ON = TOUCH ? "🔴 À vous… touchez pour terminer" : REC_ON;
+const REC_IDLE = TOUCH ? "🎙 Parler" : "🎙 Parler (ou touche Espace)";
+const REC_ON = TOUCH ? "🔴 À vous… touchez pour terminer" : "🔴 À vous… (cliquez ou relâchez Espace pour terminer)";
 function applyTheme() {
   const t = store.theme || "auto";
   if (t === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
