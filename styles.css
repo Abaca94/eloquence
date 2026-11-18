@@ -285,3 +285,13 @@ button { touch-action: manipulation; }
 /* ---------- Fin de conversation ---------- */
 .dialogue-end { margin-top: 1rem; padding: 1rem 1.2rem; border: 1px solid var(--accent); border-radius: var(--radius); background: var(--card); }
 .dialogue-end .controls { margin-top: .6rem; }
+
+/* ---------- Explication de chaque proposition (Nuances) ---------- */
+.why-list { list-style: none; display: grid; gap: .6rem; margin: .2rem 0 .8rem; }
+.why-list li { display: flex; gap: .6rem; padding: .6rem .75rem; border-radius: 10px; border: 1px solid var(--line); color: var(--text); line-height: 1.45; }
+.why-list li.why-mine { border-color: var(--accent); }
+.why-mark { font-weight: 700; min-width: 1.1em; }
+.why-good .why-mark, .why-good strong { color: var(--good, #5cc98b); }
+.why-bad .why-mark { color: var(--bad); }
+.why-tag { font-size: .78rem; color: var(--accent); font-style: normal; }
+.why-tip { color: var(--accent2); line-height: 1.5; }

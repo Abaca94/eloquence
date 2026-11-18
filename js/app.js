@@ -861,7 +861,14 @@ function pickNuance(btn, op, it) {
     toast("Pas tout à fait — regardez l'explication.");
   }
   const ex = $("#nuance-explain");
-  ex.innerHTML = "<strong>« " + it.options[it.good] + " »</strong> — " + it.tip;
+  // Chaque proposition est expliquée, la bonne comme les autres ; puis le point général.
+  const chosen = btn.textContent;
+  const rows = it.options.map((o, i) => {
+    const good = i === it.good, mine = o === chosen;
+    const why = (it.whys && it.whys[i]) || "";
+    return `<li class="${good ? "why-good" : "why-bad"}${mine ? " why-mine" : ""}"><span class="why-mark">${good ? "✓" : "✗"}</span><div><strong>${esc(o)}</strong>${mine ? ' <em class="why-tag">votre choix</em>' : ""}<br>${esc(why)}</div></li>`;
+  });
+  ex.innerHTML = `<ul class="why-list">${rows.join("")}</ul><p class="why-tip">💡 ${esc(it.tip)}</p>`;
   ex.classList.remove("hidden");
   $("#nuance-next").classList.remove("hidden");
   // Après la réponse, on fait entendre les mots à la suite pour comparer.
