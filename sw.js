@@ -1,11 +1,11 @@
 /* Éloquence — service worker : l'app fonctionne hors ligne une fois ouverte.
    Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement. */
-const VERSION = "eloquence-v16";
+const VERSION = "eloquence-v17";
 /* Caches durables, gardés entre les versions : modèle de phonèmes (js/phoneme.js) et moteur onnxruntime. */
 const KEEP = ["eloquence-model-v1", "eloquence-runtime-v1", "eloquence-audio-v1"];
 const RUNTIME_PREFIX = "https://cdn.jsdelivr.net/npm/onnxruntime-web@";
 const FILES = [
-  "./", "index.html", "styles.css", "js/app.js", "js/data.js", "js/phonemes.js", "js/phoneme.js", "js/audio-index.js",
+  "./", "index.html", "styles.css", "js/app.js", "js/data.js", "js/phonemes.js", "js/phoneme.js", "js/audio-index.js", "js/modes.js",
   "manifest.webmanifest", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"
 ];
 self.addEventListener("install", (e) => {

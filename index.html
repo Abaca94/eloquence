@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Éloquence — Atelier d'anglais oral</title>
-<link rel="stylesheet" href="styles.css?v=16">
+<link rel="stylesheet" href="styles.css?v=17">
 </head>
 <body>
 <header>
@@ -82,6 +82,12 @@
     <h2>Forge phonétique</h2>
     <p class="hint">Choisissez un axe de travail. Écoutez le modèle, rejouez-le, puis parlez — le système analyse votre production.</p>
     <div class="filters" id="pron-filters"></div>
+    <div class="modes" id="pron-modes" role="tablist">
+      <button class="mode active" data-mode="repeat">🎙 Répéter</button>
+      <button class="mode" data-mode="shadow">👥 Shadowing</button>
+      <button class="mode" data-mode="dictation">✍️ Dictée</button>
+    </div>
+    <p class="mode-help" id="mode-help"></p>
     <div class="workbench">
       <div class="phrase-card">
         <button class="ghost small" id="pron-prev">←</button>
@@ -108,6 +114,14 @@
         <button class="btn" id="btn-slow">🐢 Lentement</button>
         <button class="btn primary big-mic" id="btn-record">🎙 Parler</button>
         <button class="btn outline" id="btn-show-answer">Voir la transcription attendue</button>
+        <button class="btn primary big-mic hidden" id="btn-shadow">👥 Lancer le shadowing</button>
+      </div>
+      <div class="dictation hidden" id="dictation-box">
+        <textarea id="dict-input" rows="3" placeholder="Tapez ce que vous entendez… (nombres en lettres ou en chiffres)" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+        <div class="controls">
+          <button class="btn primary" id="dict-check">Vérifier</button>
+          <button class="btn outline" id="dict-reveal">Je donne ma langue au chat</button>
+        </div>
       </div>
       <div id="pron-result" class="result hidden"></div>
       <div id="mic-warning" class="warning hidden"></div>
@@ -238,11 +252,12 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="js/data.js?v=16"></script>
-<script src="js/phonemes.js?v=16"></script>
-<script src="js/phoneme.js?v=16"></script>
-<script src="js/audio-index.js?v=16"></script>
-<script src="js/app.js?v=16"></script>
+<script src="js/data.js?v=17"></script>
+<script src="js/phonemes.js?v=17"></script>
+<script src="js/phoneme.js?v=17"></script>
+<script src="js/audio-index.js?v=17"></script>
+<script src="js/app.js?v=17"></script>
+<script src="js/modes.js?v=17"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

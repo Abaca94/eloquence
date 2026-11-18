@@ -345,3 +345,12 @@ select, input[type="text"], input[type="number"] { background: var(--bg2); color
 @media (max-width: 360px) { .brand h1 { display: none; } }
 .lbl-short { display: none; }
 @media (max-width: 700px) { .lbl-long { display: none; } .lbl-short { display: inline; } }
+
+/* ---------- Modes de la Forge : Répéter, Shadowing, Dictée ---------- */
+.modes { display: flex; gap: .3rem; background: var(--bg2); border: 1px solid var(--line); border-radius: 12px; padding: .25rem; margin: .8rem 0 .4rem; max-width: 520px; }
+.mode { flex: 1; background: none; border: none; color: var(--muted); font: inherit; font-weight: 600; padding: .55rem .4rem; border-radius: 9px; cursor: pointer; }
+.mode.active { background: var(--card); color: var(--text); box-shadow: 0 0 0 1px var(--accent) inset; }
+.mode-help { color: var(--muted); font-size: .9rem; margin-bottom: .6rem; max-width: 70ch; }
+.phrase-card.masked #pron-en, .phrase-card.masked #pron-fr, .phrase-card.masked #pron-tip, .phrase-card.masked #pron-focus { filter: blur(9px); user-select: none; pointer-events: none; }
+.dictation textarea { width: 100%; font: inherit; font-size: 1.1rem; padding: .8rem; border-radius: 10px; margin-top: 1rem; resize: vertical; background: var(--bg2); color: var(--text); border: 1px solid var(--line); }
+.w-extra { border-color: var(--muted); color: var(--muted); text-decoration: line-through; }
