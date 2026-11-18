@@ -12,7 +12,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Éloquence — Atelier d'anglais oral</title>
-<link rel="stylesheet" href="styles.css?v=17">
+<link rel="stylesheet" href="styles.css?v=18">
 </head>
 <body>
 <header>
@@ -39,6 +39,13 @@
   <button class="tab" data-tab="progress"><span class="tab-ico">📈</span><span class="tab-lbl">Progrès</span></button>
 </nav>
 
+<div id="session-bar" class="session-bar hidden">
+  <div class="session-info"><strong id="session-step">Étape 1 / 8</strong> <span id="session-what"></span>
+    <div class="goal-bar"><div id="session-fill"></div></div></div>
+  <button class="btn primary" id="session-next" disabled>Étape suivante →</button>
+  <button class="ghost small" id="session-skip">Passer</button>
+  <button class="ghost small" id="session-quit" title="Arrêter la séance">✕</button>
+</div>
 <main>
   <!-- ============ DASHBOARD ============ -->
   <section id="tab-dashboard" class="panel active">
@@ -46,6 +53,8 @@
       <h2>Bonjour, et bienvenue à votre atelier.</h2>
       <p>Objectif du jour : <strong id="daily-goal-text">3 exercices</strong> · <span id="daily-goal-progress">0 / 3</span></p>
       <div class="goal-bar"><div id="goal-fill"></div></div>
+      <button class="btn primary session-start" id="session-start">▶ Séance du jour · environ 10 min</button>
+      <p class="muted session-sub">Révisions, prononciation, dictée, shadowing et nuances, enchaînés pour vous.</p>
     </div>
     <div class="review-card hidden" id="review-card">
       <div><strong>🔁 Révision du jour</strong><br><span id="review-text"></span></div>
@@ -195,6 +204,9 @@
       <div class="progress-cell"><div class="kpi" id="p-best">0</div><div class="kpi-label">Meilleur score de prononciation</div></div>
       <div class="progress-cell"><div class="kpi" id="p-count">0</div><div class="kpi-label">Réponses enregistrées</div></div>
     </div>
+    <h3 style="margin-top:2rem">📓 Carnet d'erreurs</h3>
+    <p class="muted">Les sons que l'analyse son par son signale le plus souvent chez vous, et les mots qui vous échappent en dictée.</p>
+    <div id="errlog"></div>
     <h3 style="margin-top:2rem">Force des axes de travail</h3>
     <div id="strength-list"></div>
     <p class="muted" id="p-review" style="margin-top:1.2rem"></p>
@@ -252,12 +264,12 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="js/data.js?v=17"></script>
-<script src="js/phonemes.js?v=17"></script>
-<script src="js/phoneme.js?v=17"></script>
-<script src="js/audio-index.js?v=17"></script>
-<script src="js/app.js?v=17"></script>
-<script src="js/modes.js?v=17"></script>
+<script src="js/data.js?v=18"></script>
+<script src="js/phonemes.js?v=18"></script>
+<script src="js/phoneme.js?v=18"></script>
+<script src="js/audio-index.js?v=18"></script>
+<script src="js/app.js?v=18"></script>
+<script src="js/modes.js?v=18"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

@@ -75,6 +75,7 @@ function showDictation(giveUp) {
   const xp = giveUp ? 2 : Math.max(2, Math.round(score / 10));
   addXP(xp);
   if (!giveUp) reviewUpdate("p:" + p.en, score >= 75);
+  if (!giveUp) logDictationMisses(al.filter(a => a.k === "miss" || a.k === "typo").map(a => a.w));
   if (typeof sessionStepDone === "function") sessionStepDone();
   $(".phrase-card").classList.remove("masked");
   const verdict = giveUp ? "Voici la phrase. Réécoutez-la en la lisant, puis réessayez sur la suivante." :
@@ -165,3 +166,83 @@ async function playShadow(withModel) {
   }
 }
 setPronMode("repeat");
+
+/* ============================================================
+   Séance du jour : une suite d'environ 10 minutes, construite à partir des
+   révisions dues et de l'axe le plus faible, sans avoir à choisir.
+   ============================================================ */
+let session = null;
+function pick(arr, n) { return shuffle(arr).slice(0, n); }
+function weakestAxis() {
+  let best = null, bestAvg = 101;
+  PHONEME_FILTERS.forEach(f => {
+    const st = store.phraseStats[f.id]; const avg = st && st.n ? st.sum / st.n : 50;   // jamais travaillé = priorité moyenne
+    if (avg < bestAvg) { bestAvg = avg; best = f.id; }
+  });
+  return best || "trap";
+}
+function buildSession() {
+  const steps = [], used = new Set();
+  const take = (list, n) => list.filter(p => !used.has(p.en)).slice(0, n).map(p => { used.add(p.en); return p; });
+  const due = shuffle(duePhrases()), weak = shuffle(PHRASES.filter(p => p.f === weakestAxis())), any = shuffle(PHRASES);
+  take(due, 2).forEach(p => steps.push({ kind: "repeat", phrase: p, label: "🔁 Révision · prononciation" }));
+  take(weak, 3 - steps.length).forEach(p => steps.push({ kind: "repeat", phrase: p, label: "🎙 Prononciation · axe à renforcer" }));
+  take(any, 1).forEach(p => steps.push({ kind: "dictation", phrase: p, label: "✍️ Dictée" }));
+  take(any, 1).forEach(p => steps.push({ kind: "shadow", phrase: p, label: "👥 Shadowing" }));
+  const dn = dueNuances(), nu = dn.concat(pick(NUANCES.filter(n => !dn.includes(n)), 4)).slice(0, 4);
+  nu.forEach(n => steps.push({ kind: "nuance", item: n, label: dn.includes(n) ? "🔁 Révision · nuance" : "⚖️ Nuance" }));
+  return steps;
+}
+function startSession() {
+  stopSpeaking();
+  session = { steps: buildSession(), i: 0, done: false };
+  $("#session-bar").classList.remove("hidden");
+  document.body.classList.add("in-session");
+  runSessionStep();
+}
+function runSessionStep() {
+  const st = session.steps[session.i];
+  session.done = false;
+  $("#session-next").disabled = true;
+  $("#session-step").textContent = "Étape " + (session.i + 1) + " / " + session.steps.length;
+  $("#session-what").textContent = st.label;
+  $("#session-fill").style.width = Math.round(100 * session.i / session.steps.length) + "%";
+  $("#session-next").textContent = session.i + 1 < session.steps.length ? "Étape suivante →" : "Terminer ✓";
+  if (st.kind === "nuance") {
+    showTab("nuance");
+    nuanceQueue = [st.item]; nuancePos = 0; showNuanceItem();
+    $("#nuance-next").classList.add("session-hide");
+  } else {
+    showTab("pronunciation");
+    sessionList = [st.phrase]; pronFilter = "session"; pronIdx = 0;
+    renderPronFilters(); setPronMode(st.kind); renderPhrase();
+  }
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+function sessionStepDone() {
+  if (!session || session.done) return;
+  session.done = true;
+  $("#session-next").disabled = false;
+}
+function sessionModeChanged() { /* un changement de mode manuel ne casse pas la séance */ }
+function nextSessionStep() {
+  if (!session) return;
+  session.i++;
+  if (session.i >= session.steps.length) return endSession(true);
+  runSessionStep();
+}
+function endSession(finished) {
+  const n = session ? session.steps.length : 0;
+  session = null;
+  $("#session-bar").classList.add("hidden");
+  document.body.classList.remove("in-session");
+  $("#nuance-next").classList.remove("session-hide");
+  pronFilter = "trap"; pronIdx = 0; renderPronFilters(); setPronMode("repeat"); renderPhrase();
+  startNuanceRound();
+  showTab("dashboard");
+  if (finished) { addXP(15); toast("🎉 Séance terminée : " + n + " étapes · +15 ⭐"); }
+}
+$("#session-start").addEventListener("click", startSession);
+$("#session-next").addEventListener("click", nextSessionStep);
+$("#session-skip").addEventListener("click", nextSessionStep);
+$("#session-quit").addEventListener("click", () => endSession(false));

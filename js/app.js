@@ -331,7 +331,8 @@ function applyTheme() {
    MODULE FORGE PHONÉTIQUE
    ============================================================ */
 let pronIdx = 0, pronFilter = "trap", reviewList = [];
-function filterPhrases() { return pronFilter === "review" ? reviewList : PHRASES.filter(p => p.f === pronFilter); }
+let sessionList = [];
+function filterPhrases() { return pronFilter === "review" ? reviewList : pronFilter === "session" ? sessionList : PHRASES.filter(p => p.f === pronFilter); }
 function openReviewPhrases() {
   reviewList = duePhrases();
   if (!reviewList.length) { pronFilter = "trap"; }
@@ -520,6 +521,7 @@ function showFineResult(r) {
       tip: "Appuyez sur la syllabe " + w.stressIssue.expected + " : plus longue, plus forte, plus haute ; réduisez les autres." });
   });
   issues.sort((a, b) => (a.lvl === "error" ? 0 : 1) - (b.lvl === "error" ? 0 : 1));
+  logSoundIssues(r);
   const verdict = score >= 90 ? "✨ Excellent, presque tous les sons sont justes." :
                   score >= 75 ? "👏 Solide. Travaillez les sons signalés ci-dessous." :
                   score >= 50 ? "🙂 En cours d'acquisition : rejouez le modèle en mode lent." :
@@ -552,6 +554,7 @@ function recordScore(score) {
   if (score > store.bestScore) store.bestScore = score;
   // Révision espacée : sous 75, la phrase reviendra ; à 75 ou plus, elle avance d'une étape.
   reviewUpdate("p:" + ph.en, score >= 75);
+  if (typeof sessionStepDone === "function") sessionStepDone();
 }
 function finishAttempt(heard, alternatives) {
   listening = false;
@@ -856,6 +859,7 @@ function showNuanceItem() {
 function pickNuance(btn, op, it) {
   if (nuanceLock) return;
   nuanceLock = true;
+  if (typeof sessionStepDone === "function") setTimeout(sessionStepDone, 0);
   $$("#nuance-options .opt").forEach(o => o.classList.add("muted-el"));
   btn.classList.remove("muted-el");
   const goodBtn = [...$$("#nuance-options .opt")].find(b => b.textContent === it.options[it.good]);
@@ -894,7 +898,53 @@ $("#nuance-next").addEventListener("click", () => {
 /* ============================================================
    MODULE PROGRESSION
    ============================================================ */
+/* ---------- Carnet d'erreurs ----------
+   Pour chaque son attendu mal prononcé : nombre d'alertes, mots concernés,
+   son entendu le plus souvent et conseil. Alimenté par l'analyse son par son. */
+function logSoundIssues(r) {
+  const log = store.errorLog || (store.errorLog = {});
+  r.words.forEach(w => w.sounds.forEach(snd => {
+    if (snd.level === "ok") return;
+    const e = log[snd.exp] || (log[snd.exp] = { n: 0, words: {}, heard: {}, tip: "" });
+    e.n += snd.level === "error" ? 1 : 0.5;
+    e.words[w.word.toLowerCase()] = (e.words[w.word.toLowerCase()] || 0) + 1;
+    if (snd.heard && snd.heard !== snd.exp) e.heard[snd.heard] = (e.heard[snd.heard] || 0) + 1;
+    if (snd.tip) e.tip = snd.tip;
+    e.last = dayNum();
+  }));
+  save();
+}
+function logDictationMisses(words) {
+  const log = store.dictMiss || (store.dictMiss = {});
+  words.forEach(w => { if (w.length > 2) log[w] = (log[w] || 0) + 1; });
+  save();
+}
+function renderErrorLog() {
+  const box = $("#errlog"); if (!box) return;
+  const log = store.errorLog || {}, top = Object.entries(log).sort((a, b) => b[1].n - a[1].n).slice(0, 8);
+  const dm = Object.entries(store.dictMiss || {}).sort((a, b) => b[1] - a[1]).slice(0, 12);
+  if (!top.length && !dm.length) {
+    box.innerHTML = '<p class="heard">Rien pour l\'instant. Faites quelques phrases en mode Répéter avec l\'analyse son par son, ou quelques dictées.</p>';
+    return;
+  }
+  const max = top.length ? top[0][1].n : 1;
+  box.innerHTML = top.map(([tok, e]) => {
+    const words = Object.entries(e.words).sort((a, b) => b[1] - a[1]).slice(0, 6).map(x => x[0]);
+    const heard = Object.entries(e.heard).sort((a, b) => b[1] - a[1])[0];
+    return `<div class="err-row">
+      <div class="lbl"><strong>${esc(Phoneme.soundName(tok))}</strong><span>${Math.round(e.n)} alerte(s)${heard ? " · souvent entendu " + esc(Phoneme.soundName(heard[0])) : ""}</span></div>
+      <div class="goal-bar"><div style="width:${Math.round(100 * e.n / max)}%"></div></div>
+      <div class="err-words">${words.map(w => `<button class="chip-filter err-word" data-word="${esc(w)}">${esc(w)}</button>`).join("")}</div>
+      ${e.tip ? `<div class="heard">💡 ${esc(e.tip)}</div>` : ""}
+    </div>`;
+  }).join("") + (dm.length ? `<div class="err-row"><div class="lbl"><strong>Mots manqués en dictée</strong></div>
+      <div class="err-words">${dm.map(([w, n]) => `<button class="chip-filter err-word" data-word="${esc(w)}">${esc(w)} · ${n}</button>`).join("")}</div></div>` : "");
+  box.querySelectorAll(".err-word").forEach(b => b.addEventListener("click", () => {
+    if (typeof openCoachWord === "function") openCoachWord(b.dataset.word); else speak(b.dataset.word);
+  }));
+}
 function renderProgress() {
+  renderErrorLog();
   const li = levelInfo();
   $("#p-level").textContent = "Nv. " + (li.idx + 1);
   $("#p-xp").textContent = store.xp;
