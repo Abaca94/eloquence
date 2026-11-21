@@ -1,6 +1,6 @@
 /* Éloquence — service worker : l'app fonctionne hors ligne une fois ouverte.
    Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement. */
-const VERSION = "eloquence-v21";
+const VERSION = "eloquence-v22";
 /* Caches durables, gardés entre les versions : modèle de phonèmes (js/phoneme.js), moteurs onnxruntime
    et Harper, enregistrements, voix du coach (js/coach.js) et données du coach (dictionnaire, WordNet).
    Changez COACH_DATA si coach/lex.json ou coach/sense/ changent. */

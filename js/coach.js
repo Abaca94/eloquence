@@ -531,3 +531,33 @@ const Coach = (function () {
   return { open, say, loadLex, entry, phonemeWords, minimalPairs, syllables, senses, kokoroPhonemes, synth, loadVoice, voiceDownloaded, renderMine, mine };
 })();
 function openCoachWord(w, tab) { Coach.open(w, tab); }
+
+/* Ligne phonétique sous la phrase de la Forge : syllabes accentuées surlignées. */
+function renderIpaLine() {
+  const el = $("#pron-ipa"); if (!el) return;
+  const p = currentPhrase(), words = p && PHONEMES[p.en];
+  const on = store.showIpa !== false;
+  const btn = $("#pron-ipa-toggle");
+  if (btn) btn.textContent = on ? "Masquer la phonétique" : "Afficher la phonétique";
+  if (!words || !on) { el.innerHTML = ""; el.classList.add("hidden"); return; }
+  el.classList.remove("hidden");
+  el.innerHTML = "/" + words.map(([w, toks, st]) => {
+    const syl = Coach.syllables(toks, st);
+    return '<span class="ipa-w" title="' + esc(w) + '">' + syl.map(x => {
+      const t = esc(x.toks.join(""));
+      return x.stressed && syl.length > 1 ? '<b>' + t + '</b>' : t;
+    }).join('<span class="syl-dot">·</span>') + "</span>";
+  }).join(" ") + "/";
+}
+(function () {
+  const base = renderPhrase;
+  renderPhrase = function () { base(); renderIpaLine(); };
+  const actions = $("#pron-ipa") && $("#pron-ipa").parentElement;
+  if (actions && !$("#pron-ipa-toggle")) {
+    const b = document.createElement("button");
+    b.className = "ghost small ipa-toggle"; b.id = "pron-ipa-toggle"; b.type = "button";
+    b.addEventListener("click", () => { store.showIpa = store.showIpa === false; save(); renderIpaLine(); });
+    $("#pron-ipa").insertAdjacentElement("afterend", b);
+  }
+  renderIpaLine();
+})();

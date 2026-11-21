@@ -15,7 +15,7 @@
 <title>Éloquence — Atelier d'anglais oral</title>
 <link rel="preload" href="fonts/gentium-book-plus-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=21">
+<link rel="stylesheet" href="styles.css?v=22">
 </head>
 <body>
 <header>
@@ -112,6 +112,7 @@
         <button class="ghost small" id="pron-prev">←</button>
         <div class="phrase-main">
           <div class="english" id="pron-en">—</div>
+          <div class="ipa-line" id="pron-ipa" lang="en-fonipa"></div>
           <div class="french" id="pron-fr"></div>
           <div class="focus-tag" id="pron-focus"></div>
           <div class="coach" id="pron-tip"></div>
@@ -201,7 +202,7 @@
   <!-- ============ NUANCE ============ -->
   <section id="tab-nuance" class="panel">
     <h2>Nuances &amp; précision</h2>
-    <p class="hint">Trois disciplines : distinguer des mots proches à l'oreille, choisir le registre juste, vue-contextualiser les synonymes de vos univers techniques.</p>
+    <p class="hint">Distinguer des mots proches à l'oreille, choisir le registre juste, remettre les synonymes techniques en contexte.</p>
     <div class="workbench" id="nuance-work">
       <div class="phrase-card column">
         <div class="focus-tag" id="nuance-type"></div>
@@ -223,7 +224,7 @@
     <div class="progress-grid">
       <div class="progress-cell big">
         <div class="kpi" id="p-level">—</div>
-        <div class="kpi-label">Niveau atteint</div>
+        <div class="kpi-label" id="p-level-num">Niveau atteint</div>
         <div class="goal-bar"><div id="p-level-fill"></div></div>
         <div class="muted" id="p-level-next"></div>
       </div>
@@ -232,7 +233,7 @@
       <div class="progress-cell"><div class="kpi" id="p-best">0</div><div class="kpi-label">Meilleur score de prononciation</div></div>
       <div class="progress-cell"><div class="kpi" id="p-count">0</div><div class="kpi-label">Réponses enregistrées</div></div>
     </div>
-    <h3 style="margin-top:2rem">📓 Carnet d'erreurs</h3>
+    <h3 style="margin-top:2rem">Carnet d'erreurs</h3>
     <p class="muted">Les sons que l'analyse son par son signale le plus souvent chez vous, et les mots qui vous échappent en dictée.</p>
     <div id="errlog"></div>
     <h3 style="margin-top:2rem">Force des axes de travail</h3>
@@ -300,15 +301,15 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="js/data.js?v=21"></script>
-<script src="js/phonemes.js?v=21"></script>
-<script src="js/phoneme.js?v=21"></script>
-<script src="js/audio-index.js?v=21"></script>
-<script src="js/app.js?v=21"></script>
-<script src="js/modes.js?v=21"></script>
-<script src="js/coach-data.js?v=21"></script>
-<script src="js/coach.js?v=21"></script>
-<script src="js/critique.js?v=21"></script>
+<script src="js/data.js?v=22"></script>
+<script src="js/phonemes.js?v=22"></script>
+<script src="js/phoneme.js?v=22"></script>
+<script src="js/audio-index.js?v=22"></script>
+<script src="js/app.js?v=22"></script>
+<script src="js/modes.js?v=22"></script>
+<script src="js/coach-data.js?v=22"></script>
+<script src="js/coach.js?v=22"></script>
+<script src="js/critique.js?v=22"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

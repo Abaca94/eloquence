@@ -253,7 +253,7 @@ main { padding: 2rem max(2rem, env(safe-area-inset-left)); max-width: 1040px; ma
 .mode:hover { color: var(--text); }
 .mode.active { background: var(--card); color: var(--text); box-shadow: 0 0 0 1px var(--line) inset, var(--shadow); }
 .mode-help { color: var(--muted); font-size: .9rem; margin-bottom: .6rem; max-width: 70ch; }
-.phrase-card.masked #pron-en, .phrase-card.masked #pron-fr, .phrase-card.masked #pron-tip, .phrase-card.masked #pron-focus { filter: blur(9px); user-select: none; pointer-events: none; }
+.phrase-card.masked #pron-en, .phrase-card.masked #pron-ipa, .phrase-card.masked #pron-fr, .phrase-card.masked #pron-tip, .phrase-card.masked #pron-focus { filter: blur(9px); user-select: none; pointer-events: none; }
 .dictation textarea { width: 100%; font-family: var(--serif); font-size: 1.2rem; padding: .8rem 1rem; border-radius: var(--r-sm); margin-top: 1rem; resize: vertical; background: var(--bg2); color: var(--text); border: 1px solid var(--line); }
 
 /* ---------- Analyse son par son ---------- */
@@ -491,3 +491,23 @@ select, input[type="text"], input[type="number"] { background: var(--bg2); color
   .in-session main { padding-bottom: calc(10rem + env(safe-area-inset-bottom)); }
 }
 @media (max-width: 380px) { .stat.level { display: none; } }
+
+/* ---------- Phonétique sous la phrase (signature : le surligneur) ---------- */
+.ipa-line { font-family: var(--serif); font-size: 1.22rem; color: var(--muted); margin-top: .45rem; line-height: 1.7; letter-spacing: .015em; max-width: 46ch; }
+.ipa-line b, .coach-ipa b { font-weight: 400; color: var(--mark-ink); background: linear-gradient(transparent 14%, var(--mark) 14%, var(--mark) 86%, transparent 86%); padding: 0 .06em; border-radius: 3px; }
+.ipa-w { white-space: nowrap; }
+.ipa-toggle { font-size: .85rem !important; padding: .1rem .3rem; margin-left: -.3rem; color: var(--muted); min-height: 30px; }
+.in-session .ipa-toggle { display: none; }
+#tab-dialogue .done-tag { order: 5; display: inline-block; margin-top: .35rem; font-size: .8rem; font-weight: 600; color: var(--accent); }
+#scenario-list .card-ico { display: none; }
+#scenario-list .cta { display: none; }
+#scenario-list .card { display: flex; flex-direction: column; }
+.progress-grid { grid-template-columns: repeat(4, 1fr); }
+.progress-cell.big .kpi { font-size: 2rem; }
+@media (max-width: 700px) {
+  .progress-grid { grid-template-columns: 1fr 1fr; }
+  .ipa-line { font-size: 1.08rem; }
+  #toast { font-size: .95rem; padding: .65rem 1rem; }
+  .in-session #toast { bottom: calc(10.5rem + env(safe-area-inset-bottom)); }
+  #tab-nuance > .hint, #tab-coach > .hint { font-size: .9rem; }
+}

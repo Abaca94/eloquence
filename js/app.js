@@ -632,7 +632,7 @@ function renderScenarios() {
     card.className = "card";
     card.innerHTML = `
       <div class="card-ico">${s.icon}</div>
-      <h3>${s.title}${done ? " ★" : ""}</h3>
+      <h3>${s.title}</h3>${done ? '<span class="done-tag">✓ Déjà joué</span>' : ""}
       <p>${s.context}</p>
       <span class="cta">${done ? "Rejouer" : "Commencer"} →</span>`;
     card.addEventListener("click", () => startScenario(s));
@@ -994,7 +994,8 @@ function renderErrorLog() {
 function renderProgress() {
   renderErrorLog();
   const li = levelInfo();
-  $("#p-level").textContent = "Nv. " + (li.idx + 1);
+  $("#p-level").textContent = li.level.name;
+  $("#p-level-num").textContent = "Niveau " + (li.idx + 1) + " sur " + LEVELS.length;
   $("#p-xp").textContent = store.xp;
   $("#p-streak").textContent = store.streak;
   $("#p-best").textContent = store.bestScore;
