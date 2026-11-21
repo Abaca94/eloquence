@@ -97,3 +97,4 @@ Une phrase sans transcription garde l'ancienne notation mot par mot.
 - Sens : Princeton WordNet 3.0 (licence WordNet) ; Open English WordNet (CC BY 4.0) pour la liste des lemmes.
 - Traductions : WOLF (Sagot et Fišer), CeCILL-C, via Open Multilingual Wordnet 1.4.
 - Grammaire : Harper (Automattic), Apache 2.0, chargé depuis jsDelivr puis gardé hors ligne.
+- Polices : Gentium Book Plus (SIL International) et Instrument Sans, SIL Open Font License 1.1, hébergées dans `fonts/`.

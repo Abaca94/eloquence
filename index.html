@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#161a21">
+<meta name="theme-color" content="#0e181d" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#e9eef0" media="(prefers-color-scheme: light)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -12,7 +13,9 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <title>Éloquence — Atelier d'anglais oral</title>
-<link rel="stylesheet" href="styles.css?v=20">
+<link rel="preload" href="fonts/gentium-book-plus-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="styles.css?v=21">
 </head>
 <body>
 <header>
@@ -27,17 +30,17 @@
     <div class="stat" title="Série de jours consécutifs"><span class="ico">🔥</span><span id="hud-streak">0</span></div>
     <div class="stat" title="Fidélité"><span class="ico">⭐</span><span id="hud-xp">0</span></div>
     <div class="stat level" title="Niveau"><span id="hud-level">—</span></div>
-    <button class="ghost" id="btn-settings" title="Réglages">⚙</button>
+    <button class="ghost" id="btn-settings" title="Réglages" aria-label="Réglages">⚙</button>
   </div>
 </header>
 
 <nav id="tabs">
-  <button class="tab active" data-tab="dashboard"><span class="tab-ico">🏠</span><span class="tab-lbl">Accueil</span></button>
-  <button class="tab" data-tab="pronunciation"><span class="tab-ico">🎙</span><span class="tab-lbl"><span class="lbl-long">Prononciation</span><span class="lbl-short">Prononcer</span></span></button>
-  <button class="tab" data-tab="dialogue"><span class="tab-ico">💬</span><span class="tab-lbl"><span class="lbl-long">Conversation</span><span class="lbl-short">Dialogues</span></span></button>
-  <button class="tab" data-tab="coach"><span class="tab-ico">🎯</span><span class="tab-lbl">Coach</span></button>
-  <button class="tab" data-tab="nuance"><span class="tab-ico">⚖️</span><span class="tab-lbl">Nuances</span></button>
-  <button class="tab" data-tab="progress"><span class="tab-ico">📈</span><span class="tab-lbl">Progrès</span></button>
+  <button class="tab active" data-tab="dashboard"><span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11.5 12 5l8 6.5V20a1 1 0 0 1-1 1h-4.5v-5.5h-5V21H5a1 1 0 0 1-1-1z"/></svg></span><span class="tab-lbl">Accueil</span></button>
+  <button class="tab" data-tab="pronunciation"><span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></span><span class="tab-lbl"><span class="lbl-long">Prononciation</span><span class="lbl-short">Prononcer</span></span></button>
+  <button class="tab" data-tab="dialogue"><span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M19 9h1a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2v2.5L17 18h-4"/></svg></span><span class="tab-lbl"><span class="lbl-long">Conversation</span><span class="lbl-short">Dialogues</span></span></button>
+  <button class="tab" data-tab="coach"><span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/><path d="M14 20h6" /></svg></span><span class="tab-lbl">Coach</span></button>
+  <button class="tab" data-tab="nuance"><span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M7 20h10M5 7h14"/><path d="M5 7l-2.5 6a2.5 2.5 0 0 0 5 0zM19 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/></svg></span><span class="tab-lbl">Nuances</span></button>
+  <button class="tab" data-tab="progress"><span class="tab-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/></svg></span><span class="tab-lbl">Progrès</span></button>
 </nav>
 
 <div id="session-bar" class="session-bar hidden">
@@ -66,25 +69,25 @@
     </div>
     <div class="cards">
       <div class="card" data-open="pronunciation">
-        <div class="card-ico">🎙</div>
+        <div class="card-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/></svg></div>
         <h3>Forge phonétique</h3>
         <p>Travail ciblé sur les sons que le français ne connaît pas, et sur les mots techniques de vos domaines.</p>
         <span class="cta">S'entraîner →</span>
       </div>
       <div class="card" data-open="dialogue">
-        <div class="card-ico">💬</div>
+        <div class="card-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M19 9h1a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2v2.5L17 18h-4"/></svg></div>
         <h3>Tête-à-tête</h3>
         <p>Conversations professionnelles avec un agent conversationnel : réunions, appels clients, négociations.</p>
         <span class="cta">Converser →</span>
       </div>
       <div class="card" data-open="coach">
-        <div class="card-ico">🎯</div>
+        <div class="card-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/><path d="M14 20h6" /></svg></div>
         <h3>Coach</h3>
         <p>Un mot qui vous résiste ? Tapez-le : conseils de prononciation, paires minimales, sens, faux amis et exercices.</p>
         <span class="cta">Travailler un mot →</span>
       </div>
       <div class="card" data-open="nuance">
-        <div class="card-ico">⚖️</div>
+        <div class="card-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M7 20h10M5 7h14"/><path d="M5 7l-2.5 6a2.5 2.5 0 0 0 5 0zM19 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/></svg></div>
         <h3>Nuances &amp; précision</h3>
         <p>Distinguer les synonymes, registres et pièges auditifs — l'oreille du traducteur, à l'oral.</p>
         <span class="cta">Affiner →</span>
@@ -297,15 +300,15 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="js/data.js?v=20"></script>
-<script src="js/phonemes.js?v=20"></script>
-<script src="js/phoneme.js?v=20"></script>
-<script src="js/audio-index.js?v=20"></script>
-<script src="js/app.js?v=20"></script>
-<script src="js/modes.js?v=20"></script>
-<script src="js/coach-data.js?v=20"></script>
-<script src="js/coach.js?v=20"></script>
-<script src="js/critique.js?v=20"></script>
+<script src="js/data.js?v=21"></script>
+<script src="js/phonemes.js?v=21"></script>
+<script src="js/phoneme.js?v=21"></script>
+<script src="js/audio-index.js?v=21"></script>
+<script src="js/app.js?v=21"></script>
+<script src="js/modes.js?v=21"></script>
+<script src="js/coach-data.js?v=21"></script>
+<script src="js/coach.js?v=21"></script>
+<script src="js/critique.js?v=21"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));

@@ -1,6 +1,6 @@
 /* Éloquence — service worker : l'app fonctionne hors ligne une fois ouverte.
    Changez VERSION à chaque mise à jour des fichiers pour forcer le rafraîchissement. */
-const VERSION = "eloquence-v20";
+const VERSION = "eloquence-v21";
 /* Caches durables, gardés entre les versions : modèle de phonèmes (js/phoneme.js), moteurs onnxruntime
    et Harper, enregistrements, voix du coach (js/coach.js) et données du coach (dictionnaire, WordNet).
    Changez COACH_DATA si coach/lex.json ou coach/sense/ changent. */
@@ -9,7 +9,10 @@ const KEEP = ["eloquence-model-v1", "eloquence-runtime-v1", "eloquence-audio-v2"
 const RUNTIME_PREFIXES = ["https://cdn.jsdelivr.net/npm/onnxruntime-web@", "https://cdn.jsdelivr.net/npm/harper.js@"];
 const FILES = [
   "./", "index.html", "styles.css", "js/app.js", "js/data.js", "js/phonemes.js", "js/phoneme.js", "js/audio-index.js", "js/modes.js", "js/coach-data.js", "js/coach.js", "js/critique.js",
-  "manifest.webmanifest", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"
+  "manifest.webmanifest",
+  "fonts/gentium-book-plus-latin-400-normal.woff2", "fonts/gentium-book-plus-latin-ext-400-normal.woff2", "fonts/gentium-book-plus-latin-400-italic.woff2",
+  "fonts/gentium-book-plus-latin-ext-400-italic.woff2", "fonts/gentium-book-plus-latin-700-normal.woff2", "fonts/gentium-book-plus-latin-ext-700-normal.woff2",
+  "fonts/instrument-sans-latin-wght-normal.woff2", "fonts/instrument-sans-latin-ext-wght-normal.woff2", "fonts/instrument-sans-latin-wght-italic.woff2", "fonts/instrument-sans-latin-ext-wght-italic.woff2", "icons/apple-touch-icon.png", "icons/icon-192.png", "icons/icon-512.png"
 ];
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(VERSION).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
