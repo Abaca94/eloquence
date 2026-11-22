@@ -324,7 +324,7 @@ const Coach = (function () {
     if (recState) { if (recState.btn === btn) recState.stop(); return; }
     out.classList.remove("hidden");
     const label = btn.textContent;
-    const fine = store.fineMode !== false && await Phoneme.isDownloaded();
+    const dl = await Phoneme.isDownloaded(), fine = store.fineMode !== false && dl;
     stopSpeaking();
     if (fine) {
       const words = phonemeWords(text);
@@ -355,7 +355,7 @@ const Coach = (function () {
       const score = ok ? 85 : 40;
       if (main) noteAttempt(score);
       out.innerHTML = (ok ? "✅ Compris : « " + esc(heard) + " »." : "❌ Entendu : « " + esc(heard) + " ». Réécoutez en mode lent et recommencez.") +
-        '<br><span class="muted">Pour une note son par son, installez l\'analyse son par son (Prononciation › Répéter).</span>';
+        '<br><span class="muted">Pour une note son par son, ' + (dl ? 'réactivez l\'analyse son par son (Prononciation › Répéter).' : 'téléchargez le modèle d\'analyse (Prononciation › Répéter).') + '</span>';
     }, () => { recState = null; btn.textContent = label; btn.classList.remove("recording"); });
     recState = { btn, stop: () => { try { r.stop(); } catch (e) {} } };
     try { audioMode("play-and-record"); r.start(); } catch (e) { recState = null; btn.textContent = label; btn.classList.remove("recording"); }

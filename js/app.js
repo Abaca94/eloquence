@@ -272,7 +272,7 @@ function micWarning(msg) {
 function ensureRecognitionUI() {
   if (!SR) {
     micWarning("⚠️ La reconnaissance vocale n'est pas disponible dans ce navigateur. " +
-      "Ouvrez Éloquence dans <strong>Chrome</strong> ou <strong>Safari</strong> — tout le reste fonctionne, seuls les retours sur votre prononciation manquent.");
+      "Ouvrez Éloquence dans <strong>Chrome</strong> ou <strong>Safari</strong>. Tout le reste fonctionne ici, seuls les retours sur votre prononciation manquent.");
     return false;
   }
   return true;
@@ -434,11 +434,11 @@ function startRecording() {
       $("#btn-record").textContent = REC_IDLE;
       if (err && errCode) {
         const hints = {
-          "not-allowed": "L'accès au micro a été refusé. Autorisez le microphone (icône dans la barre d'adresse) puis réessayez.",
-          "service-not-allowed": "Le navigateur bloque la reconnaissance vocale ici. Chargez la page via http://localhost (script « Lancer Éloquence »).",
-          "no-speech": "Aucune parole détectée — parlez un peu plus près du micro, puis réessayez.",
-          "audio-capture": "Aucun micro trouvé. Vérifiez vos réglages son (micro accessible au navigateur).",
-          "network": "La reconnaissance vocale nécessite une connexion Internet momentanément indisponible.",
+          "not-allowed": "Le micro est bloqué pour Éloquence. Autorisez-le dans les réglages du site (Safari : aA › Réglages du site web ; Chrome : icône à gauche de l'adresse), puis réessayez.",
+          "service-not-allowed": "La reconnaissance vocale est bloquée. Activez la dictée (iPhone et iPad : Réglages › Général › Clavier ; Mac : Réglages Système › Clavier). Si vous avez ouvert le fichier index.html directement, passez plutôt par l'adresse en ligne ou http://localhost.",
+          "no-speech": "Je n'ai rien entendu. Parlez un peu plus près du micro et réessayez.",
+          "audio-capture": "Aucun micro disponible. Vérifiez qu'un micro est branché et qu'aucune autre app ne l'utilise.",
+          "network": "Pas de connexion : la reconnaissance vocale du navigateur en a besoin. Réessayez une fois connecté.",
         };
         micWarning(hints[errCode] || "Le micro n'a pas répondu (" + errCode + "). Réessayez.");
       }
@@ -513,7 +513,7 @@ async function stopFineRecording() {
   const phrase = currentPhrase();
   try {
     const audio = await r.stop();
-    if (!audio) { micWarning("Enregistrement trop court : maintenez la touche ou recliquez à la fin de la phrase."); return; }
+    if (!audio) { micWarning((TOUCH ? "Enregistrement trop court : ne touchez le bouton pour terminer qu\'à la fin de la phrase." : "Enregistrement trop court : maintenez Espace, ou recliquez seulement à la fin de la phrase.")); return; }
     lastAudio = audio;
     const result = await Phoneme.run(audio, PHONEMES[phrase.en]);
     showFineResult(result);
@@ -607,9 +607,9 @@ function finishAttempt(heard, alternatives) {
 
   const res = $("#pron-result");
   res.classList.remove("hidden");
-  const verdict = score >= 90 ? "✨ Excellent — presque indistinguable d'un natif." :
+  const verdict = score >= 90 ? "✨ Excellent, presque indiscernable d'un natif." :
                   score >= 75 ? "👏 Solide. Travaillez les mots surlignés en ambre." :
-                  score >= 50 ? "🙂 En cours d'acquisition — rejouez le modèle en mode lent." :
+                  score >= 50 ? "🙂 En cours d'acquisition : rejouez le modèle en mode lent." :
                                 "🔁 Reprenez lettre par lettre : écoutez, répétez, comparez.";
   res.innerHTML = `
     <div class="score-line">${verdict} <strong>${score} / 100</strong> <span class="muted">(+${xp} ⭐)</span></div>
@@ -734,7 +734,7 @@ function answerDialogUED(transcript, opts) {
     $("#dlg-hints").classList.remove("hidden");
     if (dlgLives <= 0) {
       dlgLives = 3;
-      setTimeout(() => { toast("Trois reformulations en attente — passez à la suite si vous voulez."); }, 800);
+      setTimeout(() => { toast("Trois réponses non reconnues dans ce dialogue. 💡 Indice donne une piste, Passer fait avancer la conversation."); }, 800);
     }
   }
 }
@@ -763,10 +763,10 @@ function talkStartRec() {
     if (ev.error === "audio-capture" && talk.recorder) {
       // Micro partagé refusé par le navigateur : on renonce à l'analyse pendant les dialogues sur cet appareil.
       store.dlgDiction = false; save(); talk.recStart.then(() => talk.recorder && talk.recorder.stop()).catch(() => {}); talk.recorder = null;
-      toast("Ce navigateur ne permet pas d'analyser la prononciation pendant la reconnaissance : analyse désactivée en dialogue.");
+      toast("Sur cet appareil, la reconnaissance vocale et l'analyse de prononciation ne peuvent pas partager le micro. L'analyse en Tête-à-tête est désactivée (réactivable dans Réglages).");
       return;
     }
-    if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { talk.stopping = true; micWarning("Micro refusé : autorisez-le dans les réglages du navigateur."); } };
+    if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { talk.stopping = true; micWarning(ev.error === "not-allowed" ? "Le micro est bloqué. Autorisez-le dans les réglages du site, puis réessayez." : "La reconnaissance vocale est bloquée. Activez la dictée (iPhone et iPad : Réglages › Général › Clavier ; Mac : Réglages Système › Clavier). Si vous avez ouvert le fichier index.html directement, passez plutôt par l'adresse en ligne ou http://localhost."); } };
   r.onend = () => {
     if (!talk || talk.rec !== r) return;
     talk.done = (talk.done + " " + talk.current).trim(); talk.current = "";
@@ -921,7 +921,7 @@ function pickNuance(btn, op, it) {
     reviewUpdate("n:" + nuanceKey(it), false);
     addXP(3);
     goodBtn.classList.add("reveal-good");
-    toast("Pas tout à fait — regardez l'explication.");
+    toast("Pas tout à fait : lisez l'explication ci-dessous.");
   }
   const ex = $("#nuance-explain");
   // Chaque proposition est expliquée, la bonne comme les autres ; puis le point général.
@@ -939,7 +939,7 @@ function pickNuance(btn, op, it) {
 }
 $("#nuance-next").addEventListener("click", () => {
   nuancePos++;
-  if (nuancePos >= nuanceQueue.length) { startNuanceRound(); toast("Cycle terminé — nouvel ordre, de nouveau le défi."); return; }
+  if (nuancePos >= nuanceQueue.length) { startNuanceRound(); toast("Toutes les questions sont faites. On repart dans un nouvel ordre."); return; }
   showNuanceItem();
 });
 
@@ -1005,10 +1005,10 @@ function renderProgress() {
   if (next) {
     const pct = Math.round(100 * (store.xp - prev.xp) / (next.xp - prev.xp));
     $("#p-level-fill").style.width = pct + "%";
-    $("#p-level-next").textContent = pct + "% — prochain palier : " + next.name + " (" + next.xp + " ⭐)";
+    $("#p-level-next").textContent = pct + "% du chemin vers le palier suivant : " + next.name + " (" + next.xp + " ⭐)";
   } else {
     $("#p-level-fill").style.width = "100%";
-    $("#p-level-next").textContent = "Palier maximal atteint — chapeau bas !";
+    $("#p-level-next").textContent = "Palier maximal atteint. Chapeau bas !";
   }
   const box = $("#strength-list");
   box.innerHTML = "";
@@ -1024,7 +1024,7 @@ function renderProgress() {
   });
 }
 $("#btn-reset").addEventListener("click", () => {
-  if (confirm("Effacer toute votre progression (⭐, série, scores) ? Cette action est définitive.")) {
+  if (confirm("Effacer toute votre progression ? Les ⭐, la série et les scores seront perdus définitivement.")) {
     localStorage.removeItem(STORE_KEY);
     location.reload();
   }

@@ -72,7 +72,7 @@ const Critique = (function () {
     parts.push(["Formulation", form]);
     parts.push(["Grammaire", '<span class="muted">Vérification…</span>']);
     parts.push(["Prononciation", spoken ? (ctx.audioP ? '<span class="muted">Analyse son par son…</span>'
-      : 'Pour un retour son par son, installez l\'analyse son par son (Prononciation › Répéter › Télécharger le modèle).')
+      : (typeof fineDownloaded !== "undefined" && fineDownloaded ? 'Pour une note son par son, activez « Analyser ma prononciation pendant les dialogues » dans Réglages › Tête-à-tête, et l\'analyse son par son dans Prononciation › Répéter.' : 'Pour une note son par son, téléchargez le modèle d\'analyse (Prononciation › Répéter › Télécharger le modèle).'))
       : '<span class="muted">Réponse écrite : pas d\'analyse de prononciation. Répondez à voix haute pour l\'obtenir.</span>']);
     el.innerHTML = `<details class="critique" open><summary>🧐 Retour détaillé</summary>${parts.map(([k, v]) => `<div class="crit-sec" data-k="${k}"><strong>${k}</strong><div>${v}</div></div>`).join("")}</details>`;
     const sec = (k) => el.querySelector(`.crit-sec[data-k="${k}"] > div`);
@@ -85,7 +85,7 @@ const Critique = (function () {
       sum.gram += g.length;
       sec("Grammaire").innerHTML = g.length ? "<ul>" + g.map(x => `<li><span class="tag">${esc(HARPER_KIND_FR[x.kind] || x.kind)}</span> <span class="bad">${esc(x.bad)}</span>${x.fix.length ? " → <strong>" + x.fix.map(esc).join(" / ") + "</strong>" : ""}<br><span class="muted">${esc(x.msg)}</span></li>`).join("") + "</ul>"
         : "✅ Aucune faute détectée." + (spoken ? ' <span class="muted">(Sur la transcription de la reconnaissance vocale.)</span>' : "");
-    }).catch(e => { sec("Grammaire").innerHTML = '<span class="muted">Correcteur indisponible (' + esc(e.message || e) + "). Il se télécharge une fois (8 Mo) avec une connexion.</span>"; });
+    }).catch(e => { sec("Grammaire").innerHTML = '<span class="muted">Correcteur grammatical indisponible : il doit être téléchargé une fois (8 Mo). Reconnectez-vous puis réessayez. (' + esc(e.message || e) + ")</span>"; });
     // Prononciation (asynchrone).
     if (spoken && ctx.audioP) {
       try {

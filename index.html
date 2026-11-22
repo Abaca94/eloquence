@@ -15,7 +15,7 @@
 <title>Éloquence — Atelier d'anglais oral</title>
 <link rel="preload" href="fonts/gentium-book-plus-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/instrument-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="styles.css?v=24">
+<link rel="stylesheet" href="styles.css?v=25">
 </head>
 <body>
 <header>
@@ -77,7 +77,7 @@
       <div class="card" data-open="dialogue">
         <div class="card-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h11a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H9l-4 3v-3H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z"/><path d="M19 9h1a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2v2.5L17 18h-4"/></svg></div>
         <h3>Tête-à-tête</h3>
-        <p>Conversations professionnelles avec un agent conversationnel : réunions, appels clients, négociations.</p>
+        <p>Conversations professionnelles en anglais : réunions, appels clients, négociations.</p>
         <span class="cta">Converser →</span>
       </div>
       <div class="card" data-open="coach">
@@ -89,7 +89,7 @@
       <div class="card" data-open="nuance">
         <div class="card-ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M7 20h10M5 7h14"/><path d="M5 7l-2.5 6a2.5 2.5 0 0 0 5 0zM19 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/></svg></div>
         <h3>Nuances &amp; précision</h3>
-        <p>Distinguer les synonymes, registres et pièges auditifs — l'oreille du traducteur, à l'oral.</p>
+        <p>Distinguer les synonymes, registres et pièges auditifs : l'oreille du traducteur, à l'oral.</p>
         <span class="cta">Affiner →</span>
       </div>
     </div>
@@ -99,7 +99,7 @@
   <!-- ============ PRONUNCIATION ============ -->
   <section id="tab-pronunciation" class="panel">
     <h2>Forge phonétique</h2>
-    <p class="hint">Choisissez un axe de travail. Écoutez le modèle, rejouez-le, puis parlez — le système analyse votre production.</p>
+    <p class="hint">Choisissez un axe de travail. Écoutez le modèle, rejouez-le, puis parlez : l'app analyse votre prononciation.</p>
     <div class="filters" id="pron-filters"></div>
     <div class="modes" id="pron-modes" role="tablist">
       <button class="mode active" data-mode="repeat">🎙 Répéter</button>
@@ -152,7 +152,7 @@
   <section id="tab-dialogue" class="panel">
     <div id="dialogue-select">
       <h2>Tête-à-tête</h2>
-      <p class="hint">Choisissez une situation. L'agent parle, vous répondez à voix haute ou au clavier. Aucun fil : tout reste sur votre machine.</p>
+      <p class="hint">Choisissez une situation. Votre interlocuteur parle, vous répondez à voix haute ou au clavier. Tout reste sur votre appareil.</p>
       <div id="scenario-list" class="cards"></div>
     </div>
     <div id="dialogue-run" class="hidden">
@@ -257,7 +257,7 @@
     <select id="set-voice"></select>
     <div class="voice-row">
       <button class="btn outline" id="voice-test" type="button">🔊 Tester</button>
-      <button class="btn outline" id="voice-auto" type="button">Meilleure voix auto</button>
+      <button class="btn outline" id="voice-auto" type="button">Choisir automatiquement</button>
     </div>
     <details class="voice-hint" id="voice-hint">
       <summary>Voix peu naturelle ? Installez une voix Premium (gratuit)</summary>
@@ -301,15 +301,15 @@
 
 <div id="toast" class="hidden"></div>
 
-<script src="js/data.js?v=24"></script>
-<script src="js/phonemes.js?v=24"></script>
-<script src="js/phoneme.js?v=24"></script>
-<script src="js/audio-index.js?v=24"></script>
-<script src="js/app.js?v=24"></script>
-<script src="js/modes.js?v=24"></script>
-<script src="js/coach-data.js?v=24"></script>
-<script src="js/coach.js?v=24"></script>
-<script src="js/critique.js?v=24"></script>
+<script src="js/data.js?v=25"></script>
+<script src="js/phonemes.js?v=25"></script>
+<script src="js/phoneme.js?v=25"></script>
+<script src="js/audio-index.js?v=25"></script>
+<script src="js/app.js?v=25"></script>
+<script src="js/modes.js?v=25"></script>
+<script src="js/coach-data.js?v=25"></script>
+<script src="js/coach.js?v=25"></script>
+<script src="js/critique.js?v=25"></script>
 <script>
   if ("serviceWorker" in navigator && location.protocol !== "file:") {
     window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
