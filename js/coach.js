@@ -166,6 +166,8 @@ const Coach = (function () {
       } catch (e) { console.warn("Kokoro", e); }
     }
     speak(text, slow ? 0.72 : undefined);
+    // Promesse tenue à la fin de la lecture, pour pouvoir enchaîner (« modèle puis moi »).
+    return new Promise(ok => { afterSpeech = ok; });
   }
 
   /* ---------- Sens : WordNet + WOLF ---------- */
@@ -243,6 +245,7 @@ const Coach = (function () {
     $("#coach-star").onclick = () => toggleMine(cur.key);
   }
   function render() {
+    if (recState) recState.stop();   // la vue est reconstruite : on n'y laisse pas un micro ouvert
     const v = $("#coach-view");
     v.innerHTML = `<div class="phrase-card column" id="coach-head"></div>
       <div class="modes" id="coach-tabs">
@@ -321,16 +324,22 @@ const Coach = (function () {
   /* Enregistre puis note un mot ou une phrase. */
   let recState = null;
   async function recordAndScore(text, out, btn, main) {
-    if (recState) { if (recState.btn === btn) recState.stop(); return; }
+    // Un appui pendant un enregistrement l'arrête, quel que soit le bouton (l'ancien a pu disparaître).
+    if (recState) { recState.stop(); return; }
+    // Réservé tout de suite, avant toute attente : un double appui ne lance pas deux enregistrements.
+    const pend = { btn, cancelled: false, stop() { this.cancelled = true; if (recState === pend) recState = null; } };
+    recState = pend;
     out.classList.remove("hidden");
     const label = btn.textContent;
     const dl = await Phoneme.isDownloaded(), fine = store.fineMode !== false && dl;
+    if (pend.cancelled) return;
     stopSpeaking();
     if (fine) {
       const words = phonemeWords(text);
       Phoneme.load().catch(() => {});
       const r = Phoneme.createRecorder();
-      try { await r.start(); } catch (e) { out.innerHTML = '<span class="heard">Micro refusé ou indisponible.</span>'; return; }
+      try { await r.start(); } catch (e) { if (recState === pend) recState = null; out.innerHTML = '<span class="heard">Micro refusé ou indisponible.</span>'; return; }
+      if (pend.cancelled) { r.stop().catch(() => {}); return; }
       btn.textContent = "⏹ Terminé"; btn.classList.add("recording");
       recState = { btn, stop: async () => {
         recState = null; btn.textContent = "⏳"; btn.classList.remove("recording");
@@ -346,7 +355,7 @@ const Coach = (function () {
       return;
     }
     // Sans le modèle : la reconnaissance vocale du navigateur dit si le mot a été compris.
-    if (typeof SR === "undefined" || !SR) { out.innerHTML = '<span class="heard">La reconnaissance vocale n\'est pas disponible dans ce navigateur.</span>'; return; }
+    if (typeof SR === "undefined" || !SR) { recState = null; out.innerHTML = '<span class="heard">La reconnaissance vocale n\'est pas disponible dans ce navigateur.</span>'; return; }
     const target = normalize(text);
     btn.textContent = "🔴 J'écoute…"; btn.classList.add("recording");
     const r = makeRecognition((heard, res) => {
@@ -356,7 +365,7 @@ const Coach = (function () {
       if (main) noteAttempt(score);
       out.innerHTML = (ok ? "✅ Compris : « " + esc(heard) + " »." : "❌ Entendu : « " + esc(heard) + " ». Réécoutez en mode lent et recommencez.") +
         '<br><span class="muted">Pour une note son par son, ' + (dl ? 'réactivez l\'analyse son par son (Prononciation › Répéter).' : 'téléchargez le modèle d\'analyse (Prononciation › Répéter).') + '</span>';
-    }, () => { recState = null; btn.textContent = label; btn.classList.remove("recording"); });
+    }, () => { if (recState && recState.btn === btn) recState = null; btn.textContent = label; btn.classList.remove("recording"); });
     recState = { btn, stop: () => { try { r.stop(); } catch (e) {} } };
     try { audioMode("play-and-record"); r.start(); } catch (e) { recState = null; btn.textContent = label; btn.classList.remove("recording"); }
   }
@@ -528,7 +537,7 @@ const Coach = (function () {
   }
   init();
 
-  return { open, say, loadLex, entry, phonemeWords, minimalPairs, syllables, senses, kokoroPhonemes, synth, loadVoice, voiceDownloaded, renderMine, mine };
+  return { open, say, unlock, loadLex, entry, phonemeWords, minimalPairs, syllables, senses, kokoroPhonemes, synth, loadVoice, voiceDownloaded, renderMine, mine };
 })();
 function openCoachWord(w, tab) { Coach.open(w, tab); }
 

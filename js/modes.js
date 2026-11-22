@@ -110,25 +110,40 @@ $("#btn-shadow").addEventListener("click", async () => {
   if (!url) { toast("Pas d'enregistrement pour cette phrase : choisissez une voix naturelle dans ⚙."); return; }
   shadowBusy = true;
   const btn = $("#btn-shadow");
+  stopSpeaking();
+  // Débloque le lecteur pendant l'appui (iOS refuse une lecture lancée plus tard, hors geste).
+  player.src = url; player.playbackRate = 1; player.muted = true;
+  const prime = player.play(); if (prime) prime.then(() => { player.pause(); player.currentTime = 0; }).catch(() => {});
   const rec = Phoneme.createRecorder();
-  try { await rec.start(); } catch (e) { shadowBusy = false; micWarning("Le micro est indispensable pour le shadowing : autorisez-le puis réessayez."); return; }
+  try { await rec.start(); } catch (e) { player.muted = false; shadowBusy = false; micWarning("Le micro est indispensable pour le shadowing : autorisez-le puis réessayez."); return; }
+  let audio = null, tModel = 0;
+  const tRec = performance.now();
   btn.classList.add("recording");
   btn.textContent = "🔴 Parlez avec la voix…";
-  const tRec = performance.now();
-  stopSpeaking();
-  player.src = url; player.playbackRate = 1;
-  let tModel = 0;
-  player.addEventListener("playing", () => { tModel = performance.now(); }, { once: true });
-  const ended = new Promise(r => { player.addEventListener("ended", r, { once: true }); player.addEventListener("error", r, { once: true }); });
-  // Petit compte à rebours sonore implicite : la voix démarre une demi-seconde après le micro.
-  await new Promise(r => setTimeout(r, 500));
-  player.play().catch(() => {});
-  await ended;
-  await new Promise(r => setTimeout(r, 900));
-  const audio = await rec.stop();
-  btn.classList.remove("recording");
-  btn.textContent = "👥 Recommencer le shadowing";
-  shadowBusy = false;
+  try {
+    if (prime) await prime.catch(() => {});
+    player.pause(); player.currentTime = 0; player.muted = false;
+    player.addEventListener("playing", () => { tModel = performance.now(); }, { once: true });
+    // Fin de la voix modèle : fin normale, erreur, interruption ou lecture refusée ; garde-fou de 60 s.
+    let cleanup = () => {};
+    const ended = new Promise(r => {
+      ["ended", "error"].forEach(ev => player.addEventListener(ev, r, { once: true }));
+      // Une pause ou un changement de source n'arrête le shadowing qu'une fois la voix lancée.
+      const stopIfStarted = () => { if (tModel) r(); };
+      player.addEventListener("pause", stopIfStarted); player.addEventListener("emptied", stopIfStarted);
+      cleanup = () => { player.removeEventListener("pause", stopIfStarted); player.removeEventListener("emptied", stopIfStarted); };
+      setTimeout(r, 60000);
+      // Petit décalage : la voix démarre une demi-seconde après le micro.
+      setTimeout(() => player.play().catch(r), 500);
+    });
+    await ended; cleanup();
+    await new Promise(r => setTimeout(r, 900));
+  } finally {
+    audio = await rec.stop().catch(() => null);
+    btn.classList.remove("recording");
+    btn.textContent = "👥 Recommencer le shadowing";
+    shadowBusy = false;
+  }
   if (!audio) { micWarning("Rien n'a été enregistré. Vérifiez le micro et réessayez."); return; }
   shadowTake = { audio, url, offset: Math.max(0, (tModel - tRec) / 1000) };
   addXP(6);

@@ -21,7 +21,9 @@ try {
 function save() { localStorage.setItem(STORE_KEY, JSON.stringify(store)); }
 
 /* ---------- Gestion de journée & série ---------- */
-function todayKey() { return new Date().toISOString().slice(0, 10); }
+/* Date locale (et non UTC) : la journée change à minuit chez l'utilisateur. */
+function localKey(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function todayKey() { return localKey(new Date()); }
 function ensureDay() {
   const today = todayKey();
   if (store.today !== today) {
@@ -35,17 +37,17 @@ function onPractice() {
   ensureDay();
   const prev = todayKey();
   if (store.lastDay !== prev) {
-    const yesterday = new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+    const y = new Date(); y.setDate(y.getDate() - 1); const yesterday = localKey(y);
     store.streak = (store.lastDay === yesterday) ? store.streak + 1 : 1;
     store.lastDay = prev;
   }
 }
 function addXP(n) {
+  const beforeLevel = levelInfo();
   onPractice();
   store.xp += n;
   store.answersCount++;
   store.todayCount = (store.todayCount || 0) + 1;
-  const beforeLevel = levelInfo();
   save(); renderHUD(); renderProgress();
   const newLevel = levelInfo();
   if (newLevel.idx !== beforeLevel.idx) {
@@ -197,16 +199,21 @@ function playRecorded(text, rate, slowWanted) {
   player.playbackRate = isSlow ? 1 : Math.min(2, Math.max(0.5, rate / 0.95));
   if ("preservesPitch" in player) player.preservesPitch = true;
   if ("webkitPreservesPitch" in player) player.webkitPreservesPitch = true;
-  player.play().catch(() => speakSystem(text, rate));
+  const src = player.src;
+  // Une lecture interrompue (stop, phrase suivante) rejette avec AbortError : pas de repli dans ce cas.
+  player.play().catch((e) => { if (e && e.name !== "AbortError" && player.src === src) speakSystem(text, rate); });
   return true;
 }
 /* File d'attente : speakNext() enchaîne une phrase après celle en cours (dialogues),
    alors que speak() interrompt tout et parle immédiatement. */
 let speakQueue = [], speakBusy = false, speakWatch = null;
+/* Action unique à lancer quand la lecture en cours se termine ; annulée par stop ou nouvelle lecture. */
+let afterSpeech = null;
 function speechDone() {
   speakBusy = false; clearTimeout(speakWatch);
   const nxt = speakQueue.shift();
-  if (nxt) speakNow(nxt[0], nxt[1]);
+  if (nxt) return speakNow(nxt[0], nxt[1]);
+  if (afterSpeech) { const f = afterSpeech; afterSpeech = null; f(); }
 }
 player.addEventListener("ended", speechDone);
 player.addEventListener("error", speechDone);
@@ -218,11 +225,11 @@ function speakNext(text, rateOverride) {
   if (speakBusy) speakQueue.push([text, rateOverride]); else speakNow(text, rateOverride);
 }
 function stopSpeaking() {
-  speakQueue = []; speakBusy = false; clearTimeout(speakWatch); clearTimeout(speakTimer);
+  speakQueue = []; speakBusy = false; afterSpeech = null; clearTimeout(speakWatch); clearTimeout(speakTimer);
   speechSynthesis.cancel(); player.pause();
 }
 function speak(text, rateOverride) {
-  speakQueue = [];
+  speakQueue = []; afterSpeech = null;
   speakNow(text, rateOverride);
 }
 function speakNow(text, rateOverride) {
@@ -413,7 +420,8 @@ $("#btn-show-answer").addEventListener("click", (e) => {
 let spaceDown = false;
 $("#btn-record").addEventListener("click", toggleRecording);
 document.addEventListener("keydown", (e) => {
-  if (e.code === "Space" && $("#tab-pronunciation").classList.contains("active") && !e.repeat && !$("#settings-modal").classList.contains("open")) {
+  const typing = e.target && (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable);
+  if (e.code === "Space" && !typing && pronMode === "repeat" && $("#tab-pronunciation").classList.contains("active") && !e.repeat && !$("#settings-modal").classList.contains("open")) {
     e.preventDefault(); if (!spaceDown) { spaceDown = true; startRecording(); }
   }
 });
@@ -524,9 +532,10 @@ async function stopFineRecording() {
 function playLastAudio() {
   if (!lastAudio) return;
   audioMode("playback");
-  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+  // Contexte audio partagé, débloqué lors d'un appui (sinon iOS le laisse muet hors geste).
+  const ctx = Coach.unlock();
   const b = ctx.createBuffer(1, lastAudio.length, 16000); b.getChannelData(0).set(louder(lastAudio));
-  const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.onended = () => ctx.close(); s.start();
+  const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start();
 }
 function esc(t) { return String(t).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
 function showFineResult(r) {
@@ -561,9 +570,9 @@ function showFineResult(r) {
   $("#btn-replay").addEventListener("click", playLastAudio);
   $("#btn-compare").addEventListener("click", () => {
     // Le modèle d'abord, puis votre enregistrement dès qu'il se termine.
+    Coach.unlock();
     speak(currentPhrase().en, parseFloat(store.rate));
-    if (player.src && !player.paused) player.addEventListener("ended", playLastAudio, { once: true });
-    else setTimeout(playLastAudio, 4500);
+    afterSpeech = playLastAudio;
   });
   $("#btn-replay-model").addEventListener("click", () => speak(currentPhrase().en, parseFloat(store.rate)));
   toast("Enregistré · +" + xp + " ⭐");
@@ -769,16 +778,16 @@ function talkStartRec() {
     if (ev.error === "not-allowed" || ev.error === "service-not-allowed") { talk.stopping = true; micWarning(ev.error === "not-allowed" ? "Le micro est bloqué. Autorisez-le dans les réglages du site, puis réessayez." : "La reconnaissance vocale est bloquée. Activez la dictée (iPhone et iPad : Réglages › Général › Clavier ; Mac : Réglages Système › Clavier). Si vous avez ouvert le fichier index.html directement, passez plutôt par l'adresse en ligne ou http://localhost."); } };
   r.onend = () => {
     if (!talk || talk.rec !== r) return;
-    talk.done = (talk.done + " " + talk.current).trim(); talk.current = "";
+    talk.done = (talk.done + " " + talk.current).trim(); talk.current = ""; talk.ended = true;
     if (talk.stopping) return talkFinish();
     // Pause détectée par le navigateur : on relance, sans envoyer. Au-delà de
     // 2 minutes ou de 40 relances, on envoie ce qui a été dit plutôt que de boucler.
     talk.restarts = (talk.restarts || 0) + 1;
     if (talk.restarts > 40 || Date.now() - talk.since > 120000) return talkFinish();
     const t = talk;
-    t.timer = setTimeout(() => { if (talk !== t) return; try { t.rec = talkStartRec(); } catch (e) { talkFinish(); } }, 250);
+    t.timer = setTimeout(() => { if (talk !== t) return; if (t.stopping) return talkFinish(); try { t.rec = talkStartRec(); } catch (e) { talkFinish(); } }, 250);
   };
-  if (talk) talk.rec = r;
+  if (talk) { talk.rec = r; talk.ended = false; }
   audioMode("play-and-record"); r.start();
   return r;
 }
@@ -799,7 +808,12 @@ function talkFinish() {
 }
 $("#btn-talk").addEventListener("click", () => {
   if (!ensureRecognitionUI()) return;
-  if (talk) { talk.stopping = true; try { talk.rec.stop(); } catch (e) { talkFinish(); } return; }
+  if (talk) {
+    talk.stopping = true;
+    // Entre deux relances, la reconnaissance précédente est déjà terminée : on envoie directement.
+    if (talk.ended) { clearTimeout(talk.timer); return talkFinish(); }
+    try { talk.rec.stop(); } catch (e) { talkFinish(); } return;
+  }
   micWarning(null);
   stopSpeaking();   // l'interlocuteur se tait pendant que vous parlez
   talk = { done: "", current: "", stopping: false, rec: null, restarts: 0, since: Date.now(), timer: null, recorder: null, recStart: null };
@@ -1054,6 +1068,9 @@ $("#set-natural").addEventListener("change", (e) => {
 });
 $("#voice-test").addEventListener("click", () => speak("Let's walk through the thorough analysis of the data."));
 $("#voice-auto").addEventListener("click", () => { store.voiceChosen = false; save(); loadVoices(); speak("Let's walk through the thorough analysis of the data."); });
+// Les réglages affichent les valeurs enregistrées, pas celles par défaut du HTML.
+if (store.rate) { $("#set-rate").value = store.rate; $("#rate-value").textContent = store.rate; }
+if (store.goal) $("#set-goal").value = store.goal;
 $("#set-rate").addEventListener("input", (e) => {
   store.rate = e.target.value; $("#rate-value").textContent = e.target.value; save();
 });
